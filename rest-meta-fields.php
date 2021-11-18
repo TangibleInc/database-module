@@ -1,15 +1,9 @@
-<?php
+<?php defined( 'ABSPATH' ) || exit;
 /**
  * Rest Meta Fields class
  *
  * Based on WP_REST_Post_Meta_Fields class
- *
- * @author GamiPress <contact@gamipress.com>, Ruben Garcia <rubengcdev@gamil.com>
- *
- * @since 1.0.0
  */
-// Exit if accessed directly
-defined( 'ABSPATH' ) || exit;
 
 /**
  * Core class used to manage meta values for posts via the REST API.
@@ -18,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @see WP_REST_Meta_Fields
  */
-class CT_REST_Meta_Fields extends WP_REST_Meta_Fields {
+class TDB_REST_Meta_Fields extends WP_REST_Meta_Fields {
 
     /**
      * Table name.
@@ -33,7 +27,7 @@ class CT_REST_Meta_Fields extends WP_REST_Meta_Fields {
      *
      * @since 1.0.0
      * @access public
-     * @var CT_Table $table
+     * @var TDB_Table $table
      */
     public $table;
 
@@ -46,7 +40,7 @@ class CT_REST_Meta_Fields extends WP_REST_Meta_Fields {
      */
     public function __construct( $name ) {
         $this->name = $name;
-        $this->table = ct_get_table_object( $name );
+        $this->table = tdb_get_table_object( $name );
 
     }
 
@@ -100,7 +94,7 @@ class CT_REST_Meta_Fields extends WP_REST_Meta_Fields {
 
         foreach ( $fields as $meta_key => $args ) {
             $name = $args['name'];
-            $all_values = ct_get_object_meta( $object_id, $meta_key, false );
+            $all_values = tdb_get_object_meta( $object_id, $meta_key, false );
             if ( $args['single'] ) {
                 if ( empty( $all_values ) ) {
                     $value = $args['schema']['default'];
@@ -144,7 +138,7 @@ class CT_REST_Meta_Fields extends WP_REST_Meta_Fields {
         }
 
         // Do the exact same check for a duplicate value as in update_metadata() to avoid update_metadata() returning false.
-        $old_value = ct_get_object_meta( $object_id, $meta_key );
+        $old_value = tdb_get_object_meta( $object_id, $meta_key );
         $subtype   = get_object_subtype( $meta_type, $object_id );
 
         if ( 1 === count( $old_value ) ) {
@@ -153,7 +147,7 @@ class CT_REST_Meta_Fields extends WP_REST_Meta_Fields {
             }
         }
 
-        if ( ! ct_update_object_meta( $object_id, wp_slash( $meta_key ), wp_slash( $value ) ) ) {
+        if ( ! tdb_update_object_meta( $object_id, wp_slash( $meta_key ), wp_slash( $value ) ) ) {
             return new WP_Error(
                 'rest_meta_database_error',
                 __( 'Could not update meta value in database.' ),

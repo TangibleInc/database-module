@@ -1,25 +1,22 @@
 <?php
 /**
- * Example script about how to setup custom tables with CT.
+ * Example script for how to setup custom tables with TDB.
  *
- * Be sure to replace all instances of 'yourprefix_' with your project's prefix.
- * http://nacin.com/2010/05/11/in-wordpress-prefix-everything/
- *
- * @author GamiPress <contact@gamipress.com>, Ruben Garcia <rubengcdev@gamil.com>
+ * Be sure to replace all instances of 'yourprefix_' with a unique prefix.
  */
 
-// Include the Custom Table (CT) library
-require_once __DIR__ . '/init.php';
+// Include the Tangible Table (TDB) module
+require_once __DIR__ . '/index.php';
 
 /* ----------------------------------
  * INITIALIZATION
- * Main example about how to add a custom table through CT
- * Safest way to start everything is through ct_init action
+ * Main example about how to add a custom table through TDB
+ * Safest way to start everything is through tdb_init action
    ---------------------------------- */
 
 function yourprefix_init() {
 
-    $ct_table = ct_register_table( 'demo_logs', array(
+    $tdb_table = tdb_register_table( 'demo_logs', array(
         'singular'      => 'Log',
         'plural'        => 'Logs',
         'show_ui'       => true,        // Make custom table visible on admin area (check 'views' parameter)
@@ -86,12 +83,12 @@ function yourprefix_init() {
     ) );
 
     // Let's to add some demo data
-    //$ct_table->db->insert( array( 'title' => 'Log 1' ) );
-    //$ct_table->db->insert( array( 'title' => 'Log 2' ) );
-    //$ct_table->db->insert( array( 'title' => 'Log 3' ) );
+    //$tdb_table->db->insert( array( 'title' => 'Log 1' ) );
+    //$tdb_table->db->insert( array( 'title' => 'Log 2' ) );
+    //$tdb_table->db->insert( array( 'title' => 'Log 3' ) );
 
 }
-add_action( 'ct_init', 'yourprefix_init' );
+add_action( 'tdb_init', 'yourprefix_init' );
 
 /* ----------------------------------
  * LIST VIEW
@@ -105,8 +102,8 @@ function yourprefix_manage_demo_logs_columns( $columns = array() ) {
     $columns['status']  = __( 'Status' );
     $columns['date']    = __( 'Date' );
 
-    // You can avoid to use this function and use an alternative way through ct_register_table() views argument like:
-    // ct_register_table( 'demo_logs', array(
+    // You can avoid to use this function and use an alternative way through tdb_register_table() views argument like:
+    // tdb_register_table( 'demo_logs', array(
     //      'views' => array(
     //          'list' => array(
     //              'columns' => array(
@@ -135,8 +132,8 @@ function yourprefix_manage_demo_logs_sortable_columns( $sortable_columns = array
     $sortable_columns['status']  = array( 'status', false );    // ORDER BY status ASC
     $sortable_columns['date']    = array( 'date', true );       // ORDER BY date DESC
 
-    // You can avoid to use this function and use an alternative way through ct_register_table() views argument like:
-    // ct_register_table( 'demo_logs', array(
+    // You can avoid to use this function and use an alternative way through tdb_register_table() views argument like:
+    // tdb_register_table( 'demo_logs', array(
     //      'views' => array(
     //          'list' => array(
     //              'columns' => array(
@@ -163,7 +160,7 @@ add_filter( 'manage_demo_logs_sortable_columns', 'yourprefix_manage_demo_logs_so
  * Examples about some interesting hooks to use on add/edit views
    ---------------------------------- */
 
-// Default data when creating a new item (similar to WP auto draft) see ct_insert_object()
+// Default data when creating a new item (similar to WP auto draft) see tdb_insert_object()
 function yourprefix_demo_logs_default_data( $default_data = array() ) {
 
     $default_data['title'] = 'Auto draft';
@@ -172,7 +169,7 @@ function yourprefix_demo_logs_default_data( $default_data = array() ) {
 
     return $default_data;
 }
-add_filter( 'ct_demo_logs_default_data', 'yourprefix_demo_logs_default_data' );
+add_filter( 'tdb_demo_logs_default_data', 'yourprefix_demo_logs_default_data' );
 
 // Adding meta boxes to the edit screen
 function yourprefix_add_meta_boxes() {
@@ -246,7 +243,7 @@ function yourprefix_cmb2_meta_boxes() {
         'type'       => 'text',
     ) );
 
-    // This fields just work if you defined meta as supports on ct_register_table()
+    // This fields just work if you defined meta as supports on tdb_register_table()
     $cmb->add_field( array(
         'id'         => 'yourprefix_meta_field',
         'name'       => esc_html__( 'Meta field', 'textdomain' ),
@@ -266,7 +263,7 @@ add_action( 'cmb2_admin_init', 'yourprefix_cmb2_meta_boxes' );
 
 /* ----------------------------------
  * QUERY
- * As WP_Query, CT has a query class named CT_Query to apply (cached) searches on custom tables
+ * As WP_Query, TDB has a query class named TDB_Query to apply (cached) searches on custom tables
    ---------------------------------- */
 
 //  Fields to apply a search, used on searches ('s' query var)
@@ -278,21 +275,21 @@ function yourprefix_demo_logs_search_fields( $search_fields = array() ) {
     return $search_fields;
 
 }
-add_filter( 'ct_query_demo_logs_search_fields', 'yourprefix_demo_logs_search_fields' );
+add_filter( 'tdb_query_demo_logs_search_fields', 'yourprefix_demo_logs_search_fields' );
 
 // Custom where, example adding support to 'log__in' and 'log__not_in' query vars
-function yourprefix_demo_logs_query_where( $where, $ct_query ) {
+function yourprefix_demo_logs_query_where( $where, $tdb_query ) {
 
-    global $ct_table;
+    global $tdb_table;
 
-    if( $ct_table->name !== 'demo_logs' ) {
+    if( $tdb_table->name !== 'demo_logs' ) {
         return $where;
     }
 
-    $table_name = $ct_table->db->table_name;
+    $table_name = $tdb_table->db->table_name;
 
     // Shorthand
-    $qv = $ct_query->query_vars;
+    $qv = $tdb_query->query_vars;
 
     // Include
     if( isset( $qv['log__in'] ) && ! empty( $qv['log__in'] ) ) {
@@ -324,7 +321,7 @@ function yourprefix_demo_logs_query_where( $where, $ct_query ) {
 
     return $where;
 }
-add_filter( 'ct_query_where', 'yourprefix_demo_logs_query_where', 10, 2 );
+add_filter( 'tdb_query_where', 'yourprefix_demo_logs_query_where', 10, 2 );
 
 /* ----------------------------------
  * REST API
@@ -363,12 +360,12 @@ function yourprefix_demo_logs_rest_item_schema( $schema ) {
     return $schema;
 
 }
-add_filter( 'ct_rest_demo_logs_schema', 'yourprefix_demo_logs_rest_item_schema' );
+add_filter( 'tdb_rest_demo_logs_schema', 'yourprefix_demo_logs_rest_item_schema' );
 
 // Custom collection params, to make them work check the demo_logs_query_where() example function
 // Note: On this example, collection params are 'exclude' and 'include'
 // On demo_logs_rest_parameter_mappings() example function will be map them to the real query vars
-function yourprefix_demo_logs_rest_collection_params( $query_params, $ct_table ) {
+function yourprefix_demo_logs_rest_collection_params( $query_params, $tdb_table ) {
 
     // Exclude
     $query_params['exclude'] = array(
@@ -393,17 +390,17 @@ function yourprefix_demo_logs_rest_collection_params( $query_params, $ct_table )
 
     return $query_params;
 }
-add_filter( 'ct_rest_demo_logs_collection_params', 'yourprefix_demo_logs_rest_collection_params', 10, 2 );
+add_filter( 'tdb_rest_demo_logs_collection_params', 'yourprefix_demo_logs_rest_collection_params', 10, 2 );
 
 // Map custom parameters to real query var parameters (check the demo_logs_query_where() example function)
-function yourprefix_demo_logs_rest_parameter_mappings( $parameter_mappings, $ct_table, $request ) {
+function yourprefix_demo_logs_rest_parameter_mappings( $parameter_mappings, $tdb_table, $request ) {
 
     $parameter_mappings['exclude'] = 'log__not_in';
     $parameter_mappings['include'] = 'log__in';
 
     return $parameter_mappings;
 }
-add_filter( 'ct_rest_demo_logs_parameter_mappings', 'yourprefix_demo_logs_rest_parameter_mappings', 10, 3 );
+add_filter( 'tdb_rest_demo_logs_parameter_mappings', 'yourprefix_demo_logs_rest_parameter_mappings', 10, 3 );
 
 // Custom field sanitization on rest API updates
 function yourprefix_demo_logs_rest_sanitize_field_value( $value, $field, $request ) {
@@ -424,7 +421,7 @@ function yourprefix_demo_logs_rest_sanitize_field_value( $value, $field, $reques
 
     return $value;
 }
-add_filter( 'ct_rest_demo_logs_sanitize_field_value', 'yourprefix_demo_logs_rest_sanitize_field_value', 10, 3 );
+add_filter( 'tdb_rest_demo_logs_sanitize_field_value', 'yourprefix_demo_logs_rest_sanitize_field_value', 10, 3 );
 
 // Register rest field
 function yourprefix_demo_logs_register_rest_field() {
@@ -450,14 +447,14 @@ function yourprefix_demo_logs_register_rest_field() {
     );
 
 }
-add_action( 'ct_rest_api_init', 'yourprefix_demo_logs_register_rest_field' );
+add_action( 'tdb_rest_api_init', 'yourprefix_demo_logs_register_rest_field' );
 
 // Get object meta callback
 function yourprefix_common_get_object_meta( $object, $field_name, $request ) {
-    return ct_get_object_meta( $object[ 'id' ], $field_name, true );
+    return tdb_get_object_meta( $object[ 'id' ], $field_name, true );
 }
 
 // Update object meta callback
 function yourprefix_common_update_object_meta( $value, $object, $field_name ) {
-    return ct_update_object_meta( $object[ 'id' ], $field_name, $value );
+    return tdb_update_object_meta( $object[ 'id' ], $field_name, $value );
 }

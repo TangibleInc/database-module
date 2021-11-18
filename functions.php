@@ -1,41 +1,32 @@
-<?php
-/**
- * CT Functions
- *
- * @since 1.0.0
- */
-// Exit if accessed directly
-defined( 'ABSPATH' ) || exit;
+<?php defined( 'ABSPATH' ) || exit;
 
 /**
  * Register a custom table
  *
- * @since 1.0.0
- *
  * @param string    $name
  * @param array     $args
  *
- * @return CT_Table
+ * @return TDB_Table
  */
-function ct_register_table( $name, $args ) {
+function tdb_register_table( $name, $args ) {
 
-    global $ct_registered_tables;
+    global $tdb_registered_tables;
 
-    if ( ! is_array( $ct_registered_tables ) ) {
-        $ct_registered_tables = array();
+    if ( ! is_array( $tdb_registered_tables ) ) {
+        $tdb_registered_tables = array();
     }
 
     $name = sanitize_key( $name );
 
-    if( isset( $ct_registered_tables[$name] ) ) {
-        return $ct_registered_tables[$name];
+    if( isset( $tdb_registered_tables[$name] ) ) {
+        return $tdb_registered_tables[$name];
     }
 
-    $ct_table = new CT_Table( $name, $args );
+    $tdb_table = new TDB_Table( $name, $args );
 
-    $ct_registered_tables[$name] = $ct_table;
+    $tdb_registered_tables[$name] = $tdb_table;
 
-    return $ct_table;
+    return $tdb_table;
 
 }
 
@@ -44,25 +35,25 @@ function ct_register_table( $name, $args ) {
  *
  * @since 1.0.0
  *
- * @param CT_Table|string $object CT_Table object or CT_Table name
+ * @param TDB_Table|string $object TDB_Table object or TDB_Table name
  *
- * @return CT_Table $ct_table
+ * @return TDB_Table $tdb_table
  */
-function ct_setup_table( $object ) {
+function tdb_setup_table( $object ) {
 
-    global $ct_registered_tables, $ct_previous_table, $ct_table;
+    global $tdb_registered_tables, $tdb_previous_table, $tdb_table;
 
-    if( is_object( $ct_table ) ) {
-        $ct_previous_table = $ct_table;
+    if( is_object( $tdb_table ) ) {
+        $tdb_previous_table = $tdb_table;
     }
 
     if( is_object( $object ) ) {
-        $ct_table = $object;
-    } else if( gettype( $object ) === 'string' && isset( $ct_registered_tables[$object] ) ) {
-        $ct_table = $ct_registered_tables[$object];
+        $tdb_table = $object;
+    } else if( gettype( $object ) === 'string' && isset( $tdb_registered_tables[$object] ) ) {
+        $tdb_table = $tdb_registered_tables[$object];
     }
 
-    return $ct_table;
+    return $tdb_table;
 
 }
 
@@ -71,40 +62,40 @@ function ct_setup_table( $object ) {
  *
  * @since 1.0.0
  *
- * @return CT_Table $ct_table
+ * @return TDB_Table $tdb_table
  */
-function ct_reset_setup_table() {
+function tdb_reset_setup_table() {
 
-    global $ct_registered_tables, $ct_previous_table, $ct_table;
+    global $tdb_registered_tables, $tdb_previous_table, $tdb_table;
 
-    if( is_object( $ct_previous_table ) ) {
-        $ct_table = $ct_previous_table;
+    if( is_object( $tdb_previous_table ) ) {
+        $tdb_table = $tdb_previous_table;
     }
 
-    return $ct_table;
+    return $tdb_table;
 
 }
 
 /**
- * get the CT_Table object of given table name
+ * get the TDB_Table object of given table name
  *
- * @param CT_Table|string $name CT_Table object or CT_Table name
+ * @param TDB_Table|string $name TDB_Table object or TDB_Table name
  *
  * @since 1.0.0
  *
- * @return CT_Table
+ * @return TDB_Table
  */
-function ct_get_table_object( $name ) {
+function tdb_get_table_object( $name ) {
 
-    global $ct_registered_tables;
+    global $tdb_registered_tables;
 
     if( is_object( $name ) ) {
-        $ct_table = $name;
-    } else if( gettype( $name ) === 'string' && isset( $ct_registered_tables[$name] ) ) {
-        $ct_table = $ct_registered_tables[$name];
+        $tdb_table = $name;
+    } else if( gettype( $name ) === 'string' && isset( $tdb_registered_tables[$name] ) ) {
+        $tdb_table = $tdb_registered_tables[$name];
     }
 
-    return $ct_table;
+    return $tdb_table;
 }
 
 /**
@@ -112,42 +103,42 @@ function ct_get_table_object( $name ) {
  *
  * @since 1.0.0
  *
- * @param CT_Table $ct_table
+ * @param TDB_Table $tdb_table
  *
  * @return array
  */
-function ct_get_table_labels( $ct_table ) {
+function tdb_get_table_labels( $tdb_table ) {
 
     $default_labels = array(
-        'name' => __('%1$s', 'ct'),
-        'singular_name' => __('%1$s', 'ct'),
-        'plural_name' => __('%2$s', 'ct'),
-        'add_new' => __('Add New', 'ct'),
-        'add_new_item' => __('Add New %1$s', 'ct'),
-        'edit_item' => __('Edit %1$s', 'ct'),
-        'new_item' => __('New %1$s', 'ct'),
-        'view_item' => __('View %1$s', 'ct'),
-        'view_items' => __('View %2$s', 'ct'),
-        'search_items' => __( 'Search %2$s', 'ct' ),
-        'not_found' => __( 'No %2$s found.', 'ct' ),
-        'not_found_in_trash' => __( 'No %2$s found in Trash.', 'ct' ),
-        'parent_item_colon' => __( 'Parent %1$s:', 'ct' ),
-        'all_items' => __( 'All %2$s', 'ct' ),
-        'archives' => __( '%1$s Archives', 'ct' ),
-        'attributes' => __( '%1$s Attributes', 'ct' ),
-        'insert_into_item' => __( 'Insert into %1$s', 'ct' ),
-        'uploaded_to_this_item' => __( 'Uploaded to this post', 'ct' ),
-        'featured_image' => __( 'Featured Image', 'ct' ),
-        'set_featured_image' => __( 'Set featured image', 'ct' ),
-        'remove_featured_image' => __( 'Remove featured image', 'ct' ),
-        'use_featured_image' => __( 'Use as featured image', 'ct' ),
-        'filter_items_list' => __( 'Filter posts list', 'ct' ),
-        'items_list_navigation' => __( '%2$s list navigation', 'ct' ),
-        'items_list' => __( '%2$s list', 'ct' ),
+        'name' => __('%1$s', 'tdb'),
+        'singular_name' => __('%1$s', 'tdb'),
+        'plural_name' => __('%2$s', 'tdb'),
+        'add_new' => __('Add New', 'tdb'),
+        'add_new_item' => __('Add New %1$s', 'tdb'),
+        'edit_item' => __('Edit %1$s', 'tdb'),
+        'new_item' => __('New %1$s', 'tdb'),
+        'view_item' => __('View %1$s', 'tdb'),
+        'view_items' => __('View %2$s', 'tdb'),
+        'search_items' => __( 'Search %2$s', 'tdb' ),
+        'not_found' => __( 'No %2$s found.', 'tdb' ),
+        'not_found_in_trash' => __( 'No %2$s found in Trash.', 'tdb' ),
+        'parent_item_colon' => __( 'Parent %1$s:', 'tdb' ),
+        'all_items' => __( 'All %2$s', 'tdb' ),
+        'archives' => __( '%1$s Archives', 'tdb' ),
+        'attributes' => __( '%1$s Attributes', 'tdb' ),
+        'insert_into_item' => __( 'Insert into %1$s', 'tdb' ),
+        'uploaded_to_this_item' => __( 'Uploaded to this post', 'tdb' ),
+        'featured_image' => __( 'Featured Image', 'tdb' ),
+        'set_featured_image' => __( 'Set featured image', 'tdb' ),
+        'remove_featured_image' => __( 'Remove featured image', 'tdb' ),
+        'use_featured_image' => __( 'Use as featured image', 'tdb' ),
+        'filter_items_list' => __( 'Filter posts list', 'tdb' ),
+        'items_list_navigation' => __( '%2$s list navigation', 'tdb' ),
+        'items_list' => __( '%2$s list', 'tdb' ),
     );
 
     foreach( $default_labels as $label => $pattern ) {
-        $default_labels[$label] = sprintf( $pattern, $ct_table->singular, $ct_table->plural );
+        $default_labels[$label] = sprintf( $pattern, $tdb_table->singular, $tdb_table->plural );
     }
 
     return (object) $default_labels;
@@ -159,22 +150,22 @@ function ct_get_table_labels( $ct_table ) {
  *
  * @since 1.0.0
  *
- * @param CT_Table $ct_table
+ * @param TDB_Table $tdb_table
  *
  * @return array
  */
-function ct_get_table_fields( $ct_table ) {
+function tdb_get_table_fields( $tdb_table ) {
 
-    return $ct_table->db->schema->fields;
+    return $tdb_table->db->schema->fields;
 
 }
 
 /**
- * Execute CT role creation.
+ * Execute role creation.
  *
  * @since 1.0.0
  */
-function ct_populate_roles() {
+function tdb_populate_roles() {
 
     // Add caps for Administrator role
     $role = get_role( 'administrator' );
@@ -190,7 +181,7 @@ function ct_populate_roles() {
         'map_meta_cap' => null
     );
 
-    $capabilities = ct_get_table_capabilities( $args );
+    $capabilities = tdb_get_table_capabilities( $args );
 
     foreach( $capabilities as $cap ) {
         $role->add_cap( $cap );
@@ -253,7 +244,7 @@ function ct_populate_roles() {
  * @param object $args Post type registration arguments.
  * @return object object with all the capabilities as member variables.
  */
-function ct_get_table_capabilities( $args ) {
+function tdb_get_table_capabilities( $args ) {
     if ( ! is_array( $args->capability_type ) ) {
         $args->capability_type = array( $args->capability_type, $args->capability_type . 's' );
     }
@@ -300,7 +291,7 @@ function ct_get_table_capabilities( $args ) {
 
     // Remember meta capabilities for future reference.
     if ( $args->map_meta_cap ) {
-        _ct_meta_capabilities( $capabilities );
+        _tdb_meta_capabilities( $capabilities );
     }
 
     // Shortcut to override all capabilities by a specific capability
@@ -323,12 +314,12 @@ function ct_get_table_capabilities( $args ) {
  *
  * @param array $capabilities Post type meta capabilities.
  */
-function _ct_meta_capabilities( $capabilities = null ) {
-    global $ct_meta_caps;
+function _tdb_meta_capabilities( $capabilities = null ) {
+    global $tdb_meta_caps;
 
     foreach ( $capabilities as $core => $custom ) {
         if ( in_array( $core, array( 'read_item', 'delete_item', 'edit_item' ) ) ) {
-            $ct_meta_caps[ $custom ] = $core;
+            $tdb_meta_caps[ $custom ] = $core;
         }
     }
 }
@@ -346,16 +337,16 @@ function _ct_meta_capabilities( $capabilities = null ) {
  * @return stdClass|array|null Type corresponding to $output on success or null on failure.
  *                            When $output is OBJECT, a `stdClass` instance is returned.
  */
-function ct_get_object( $object = null, $output = OBJECT, $filter = 'raw' ) {
+function tdb_get_object( $object = null, $output = OBJECT, $filter = 'raw' ) {
 
-    global $wpdb, $ct_table;
+    global $wpdb, $tdb_table;
 
     if ( is_object( $object ) ) {
-        $primary_key = $ct_table->db->primary_key;
+        $primary_key = $tdb_table->db->primary_key;
 
-        $object = ct_get_object_instance( $object->$primary_key );
+        $object = tdb_get_object_instance( $object->$primary_key );
     } else {
-        $object = ct_get_object_instance( $object );
+        $object = tdb_get_object_instance( $object );
     }
 
     if ( ! $object )
@@ -380,24 +371,24 @@ function ct_get_object( $object = null, $output = OBJECT, $filter = 'raw' ) {
  * @param int $object_id Object primary key.
  * @return stdClass|false Object std object, false otherwise.
  */
-function ct_get_object_instance( $object_id = null ) {
+function tdb_get_object_instance( $object_id = null ) {
 
-    global $wpdb, $ct_table;
+    global $wpdb, $tdb_table;
 
     $object_id = (int) $object_id;
     if ( ! $object_id ) {
         return false;
     }
 
-    $object = wp_cache_get( $object_id, $ct_table->name );
+    $object = wp_cache_get( $object_id, $tdb_table->name );
 
     if ( ! $object ) {
-        $object = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$ct_table->db->table_name} WHERE {$ct_table->db->primary_key} = %d LIMIT 1", $object_id ) );
+        $object = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$tdb_table->db->table_name} WHERE {$tdb_table->db->primary_key} = %d LIMIT 1", $object_id ) );
 
         if ( ! $object )
             return false;
 
-        wp_cache_add( $object_id, $object, $ct_table->name );
+        wp_cache_add( $object_id, $object, $tdb_table->name );
     }
 
     return $object;
@@ -417,19 +408,19 @@ function ct_get_object_instance( $object_id = null ) {
  *
  * @param int|Object $object Post ID or post object to remove from the cache.
  */
-function ct_clean_object_cache( $object ) {
-    global $_wp_suspend_cache_invalidation, $ct_table;
+function tdb_clean_object_cache( $object ) {
+    global $_wp_suspend_cache_invalidation, $tdb_table;
 
     if ( ! empty( $_wp_suspend_cache_invalidation ) )
         return;
 
-    $object = ct_get_object( $object );
+    $object = tdb_get_object( $object );
     if ( empty( $object ) )
         return;
 
-    $primary_key = $ct_table->db->primary_key;
+    $primary_key = $tdb_table->db->primary_key;
 
-    wp_cache_delete( $object->$primary_key, $ct_table->name );
+    wp_cache_delete( $object->$primary_key, $tdb_table->name );
 
     //wp_cache_delete( 'wp_get_archives', 'general' );
 
@@ -441,9 +432,9 @@ function ct_clean_object_cache( $object ) {
      * @param int     $post_id Post ID.
      * @param WP_Post $post    Post object.
      */
-    do_action( 'ct_clean_object_cache', $object->$primary_key, $object );
+    do_action( 'tdb_clean_object_cache', $object->$primary_key, $object );
 
-    wp_cache_set( 'last_changed', microtime(), $ct_table->name );
+    wp_cache_set( 'last_changed', microtime(), $tdb_table->name );
 }
 
 /**
@@ -458,9 +449,9 @@ function ct_clean_object_cache( $object ) {
  * @param bool         $wp_error Optional. Allow return of WP_Error on failure. Default false.
  * @return int|WP_Error The value 0 or WP_Error on failure. The post ID on success.
  */
-function ct_update_object( $object_data = array(), $wp_error = false ) {
+function tdb_update_object( $object_data = array(), $wp_error = false ) {
 
-    global $ct_table;
+    global $tdb_table;
 
     if ( is_object( $object_data ) ) {
         // Non-escaped post was passed.
@@ -468,10 +459,10 @@ function ct_update_object( $object_data = array(), $wp_error = false ) {
         $object_data = wp_slash( $object_data );
     }
 
-    $primary_key = $ct_table->db->primary_key;
+    $primary_key = $tdb_table->db->primary_key;
 
     // First, get all of the original fields.
-    $object = ct_get_object( $object_data[$primary_key], ARRAY_A );
+    $object = tdb_get_object( $object_data[$primary_key], ARRAY_A );
 
     if ( is_null( $object ) ) {
         if ( $wp_error )
@@ -485,7 +476,7 @@ function ct_update_object( $object_data = array(), $wp_error = false ) {
     // Merge old and new fields with new fields overwriting old ones.
     $object_data = array_merge( $object, $object_data );
 
-    return ct_insert_object( $object_data, $wp_error );
+    return tdb_insert_object( $object_data, $wp_error );
 
 }
 
@@ -495,19 +486,19 @@ function ct_update_object( $object_data = array(), $wp_error = false ) {
  * @since 1.0.0
  *
  * @global wpdb $wpdb WordPress database abstraction object.
- * @global CT_Table $ct_table Custom Tables CT_Table object type.
+ * @global TDB_Table $tdb_table Custom Tables TDB_Table object type.
  *
  * @param array $object_data An array of elements that make up a post to update or insert.
  * @param bool  $wp_error Optional. Whether to return a WP_Error on failure. Default false.
  *
  * @return int|WP_Error The post ID on success. The value 0 or WP_Error on failure.
  */
-function ct_insert_object( $object_data, $wp_error = false ) {
+function tdb_insert_object( $object_data, $wp_error = false ) {
 
-    global $wpdb, $ct_table;
+    global $wpdb, $tdb_table;
 
-    if( ! is_a( $ct_table, 'CT_Table' ) ) {
-        return new WP_Error( 'invalid_ct_table', __( 'Invalid CT Table object.' ) );
+    if( ! is_a( $tdb_table, 'TDB_Table' ) ) {
+        return new WP_Error( 'invalid_tdb_table', __( 'Invalid TDB Table object.' ) );
     }
 
     /**
@@ -519,7 +510,7 @@ function ct_insert_object( $object_data, $wp_error = false ) {
      *
      * @param array $default_data Default data to be filtered.
      */
-    $defaults = apply_filters( "ct_{$ct_table->name}_default_data", array() );
+    $defaults = apply_filters( "tdb_{$tdb_table->name}_default_data", array() );
 
     $object_data = wp_parse_args( $object_data, $defaults );
 
@@ -527,15 +518,15 @@ function ct_insert_object( $object_data, $wp_error = false ) {
     $object_id = 0;
     $original_object_data = array();
     $update = false;
-    $primary_key = $ct_table->db->primary_key;
+    $primary_key = $tdb_table->db->primary_key;
 
     if ( ! empty( $object_data[$primary_key] ) ) {
         $update = true;
 
         // Get the object ID.
         $object_id = $object_data[$primary_key];
-        $object_before = ct_get_object( $object_id );
-        $original_object_data = ct_get_object( $object_id, ARRAY_A );
+        $object_before = tdb_get_object( $object_id );
+        $original_object_data = tdb_get_object( $object_id, ARRAY_A );
 
         if ( is_null( $original_object_data ) ) {
 
@@ -555,7 +546,7 @@ function ct_insert_object( $object_data, $wp_error = false ) {
      * @param array $object_data    An array with new object data.
      * @param array $original_object_data An array with the original object data.
      */
-    $object_data = apply_filters( 'ct_insert_object_data', $object_data, $original_object_data );
+    $object_data = apply_filters( 'tdb_insert_object_data', $object_data, $original_object_data );
 
     $object_data = wp_unslash( $object_data );
 
@@ -573,7 +564,7 @@ function ct_insert_object( $object_data, $wp_error = false ) {
          */
         do_action( 'pre_object_update', $object_id, $object_data );
 
-        if ( false === $ct_table->db->update( $object_data, $where ) ) {
+        if ( false === $tdb_table->db->update( $object_data, $where ) ) {
             if ( $wp_error ) {
                 return new WP_Error('db_update_error', __('Could not update object in the database'), $wpdb->last_error);
             } else {
@@ -588,12 +579,12 @@ function ct_insert_object( $object_data, $wp_error = false ) {
         if ( ! empty( $import_id ) ) {
 
             $import_id = (int) $import_id;
-            if ( ! $wpdb->get_var( $wpdb->prepare("SELECT {$primary_key} FROM {$ct_table->db->table_name} WHERE {$primary_key} = %d", $import_id) ) ) {
+            if ( ! $wpdb->get_var( $wpdb->prepare("SELECT {$primary_key} FROM {$tdb_table->db->table_name} WHERE {$primary_key} = %d", $import_id) ) ) {
                 $object_data[$primary_key] = $import_id;
             }
         }
 
-        if ( false === $wpdb->insert( $ct_table->db->table_name, $object_data ) ) {
+        if ( false === $wpdb->insert( $tdb_table->db->table_name, $object_data ) ) {
 
             if ( $wp_error ) {
                 return new WP_Error('db_insert_error', __('Could not insert object into the database'), $wpdb->last_error);
@@ -607,15 +598,15 @@ function ct_insert_object( $object_data, $wp_error = false ) {
     }
 
     // If isset meta_input and object supports meta, then add meta data
-    if ( ! empty( $object_data['meta_input'] ) && $ct_table->meta ) {
+    if ( ! empty( $object_data['meta_input'] ) && $tdb_table->meta ) {
         foreach ( $object_data['meta_input'] as $field => $value ) {
-            ct_update_object_meta( $object_id, $field, $value );
+            tdb_update_object_meta( $object_id, $field, $value );
         }
     }
 
-    ct_clean_object_cache( $object_id );
+    tdb_clean_object_cache( $object_id );
 
-    $object = ct_get_object( $object_id );
+    $object = tdb_get_object( $object_id );
 
     if ( $update ) {
         /**
@@ -626,9 +617,9 @@ function ct_insert_object( $object_data, $wp_error = false ) {
          * @param int     $post_ID Post ID.
          * @param WP_Post $post    Post object.
          */
-        do_action( 'ct_edit_object', $object_id, $object );
+        do_action( 'tdb_edit_object', $object_id, $object );
 
-        $object_after = ct_get_object( $object_id );
+        $object_after = tdb_get_object( $object_id );
 
         /**
          * Fires once an existing post has been updated.
@@ -639,13 +630,13 @@ function ct_insert_object( $object_data, $wp_error = false ) {
          * @param WP_Post $object_after   Object following the update.
          * @param WP_Post $object_before  Object before the update.
          */
-        do_action( 'ct_object_updated', $object_id, $object_after, $object_before);
+        do_action( 'tdb_object_updated', $object_id, $object_after, $object_before);
     }
 
     /**
      * Fires once a object has been saved.
      *
-     * The dynamic portion of the hook name, `{$ct_table->name}`, refers to the object type.
+     * The dynamic portion of the hook name, `{$tdb_table->name}`, refers to the object type.
      *
      * @since 1.0.0
      *
@@ -653,7 +644,7 @@ function ct_insert_object( $object_data, $wp_error = false ) {
      * @param WP_Post $object       Object object.
      * @param bool    $update       Whether this is an existing object being updated or not.
      */
-    do_action( "ct_save_object_{$ct_table->name}", $object_id, $object, $update );
+    do_action( "tdb_save_object_{$tdb_table->name}", $object_id, $object, $update );
 
     /**
      * Fires once a post has been saved.
@@ -664,7 +655,7 @@ function ct_insert_object( $object_data, $wp_error = false ) {
      * @param WP_Post $object       Object.
      * @param bool    $update       Whether this is an existing post being updated or not.
      */
-    do_action( 'ct_save_object', $object_id, $object, $update );
+    do_action( 'tdb_save_object', $object_id, $object, $update );
 
     /**
      * Fires once a post has been saved.
@@ -675,7 +666,7 @@ function ct_insert_object( $object_data, $wp_error = false ) {
      * @param WP_Post $post    Post object.
      * @param bool    $update  Whether this is an existing post being updated or not.
      */
-    do_action( 'ct_insert_object', $object_id, $object, $update );
+    do_action( 'tdb_insert_object', $object_id, $object, $update );
 
     return $object_id;
 }
@@ -701,25 +692,25 @@ function ct_insert_object( $object_data, $wp_error = false ) {
  *                           Default false.
  * @return WP_Post|false|null Post data on success, false or null on failure.
  */
-function ct_delete_object( $object_id = 0, $force_delete = false ) {
+function tdb_delete_object( $object_id = 0, $force_delete = false ) {
 
-    global $wpdb, $ct_table;
+    global $wpdb, $tdb_table;
 
-    if( ! is_a( $ct_table, 'CT_Table' ) ) {
-        return new WP_Error( 'invalid_ct_table', __( 'Invalid CT Table object.' ) );
+    if( ! is_a( $tdb_table, 'TDB_Table' ) ) {
+        return new WP_Error( 'invalid_tdb_table', __( 'Invalid TDB Table object.' ) );
     }
 
-    $ct_object = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$ct_table->db->table_name} WHERE {$ct_table->db->primary_key} = %d", $object_id ) );
+    $tdb_object = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$tdb_table->db->table_name} WHERE {$tdb_table->db->primary_key} = %d", $object_id ) );
 
-    if ( ! $ct_object ) {
-        return $ct_object;
+    if ( ! $tdb_object ) {
+        return $tdb_object;
     }
 
-    $ct_object = ct_get_object( $ct_object );
+    $tdb_object = tdb_get_object( $tdb_object );
 
     // TODO: Add support for trash functionality
     //if ( ! $force_delete && ( 'post' === $post->post_type || 'page' === $post->post_type ) && 'trash' !== get_post_status( $postid ) && EMPTY_TRASH_DAYS ) {
-        //return ct_trash_object( $object_id );
+        //return tdb_trash_object( $object_id );
     //}
 
     /**
@@ -731,30 +722,30 @@ function ct_delete_object( $object_id = 0, $force_delete = false ) {
      * @param WP_Post $post         Post object.
      * @param bool    $force_delete Whether to bypass the trash.
      */
-    $check = apply_filters( 'pre_delete_object', null, $ct_object, $force_delete );
+    $check = apply_filters( 'pre_delete_object', null, $tdb_object, $force_delete );
     if ( null !== $check ) {
         return $check;
     }
 
     /**
-     * Fires before a post is deleted, at the start of ct_delete_object().
+     * Fires before a post is deleted, at the start of tdb_delete_object().
      *
      * @since 1.0.0
      *
-     * @see ct_delete_object()
+     * @see tdb_delete_object()
      *
      * @param int $object_id Object ID.
      */
     do_action( 'before_delete_object', $object_id );
 
-    if( $ct_table->meta ) {
-        ct_delete_object_meta( $object_id, '_wp_trash_meta_status' );
-        ct_delete_object_meta( $object_id, '_wp_trash_meta_time' );
+    if( $tdb_table->meta ) {
+        tdb_delete_object_meta( $object_id, '_wp_trash_meta_status' );
+        tdb_delete_object_meta( $object_id, '_wp_trash_meta_time' );
 
-        $object_meta_ids = $wpdb->get_col( $wpdb->prepare( "SELECT {$ct_table->meta->db->primary_key} FROM {$ct_table->meta->db->table_name} WHERE {$ct_table->db->primary_key} = %d ", $object_id ));
+        $object_meta_ids = $wpdb->get_col( $wpdb->prepare( "SELECT {$tdb_table->meta->db->primary_key} FROM {$tdb_table->meta->db->table_name} WHERE {$tdb_table->db->primary_key} = %d ", $object_id ));
 
         foreach ( $object_meta_ids as $mid ) {
-            ct_delete_metadata_by_mid( 'post', $mid );
+            tdb_delete_metadata_by_mid( 'post', $mid );
         }
     }
 
@@ -767,7 +758,7 @@ function ct_delete_object( $object_id = 0, $force_delete = false ) {
      */
     do_action( 'delete_object', $object_id );
 
-    $result = $ct_table->db->delete( $object_id );
+    $result = $tdb_table->db->delete( $object_id );
 
     if ( ! $result ) {
         return false;
@@ -782,20 +773,20 @@ function ct_delete_object( $object_id = 0, $force_delete = false ) {
      */
     do_action( 'deleted_object', $object_id );
 
-    ct_clean_object_cache( $ct_object );
+    tdb_clean_object_cache( $tdb_object );
 
     /**
-     * Fires after a post is deleted, at the conclusion of ct_delete_object().
+     * Fires after a post is deleted, at the conclusion of tdb_delete_object().
      *
      * @since 1.0.0
      *
-     * @see ct_delete_object()
+     * @see tdb_delete_object()
      *
      * @param int $object_id Object ID.
      */
     do_action( 'after_delete_object', $object_id );
 
-    return $ct_object;
+    return $tdb_object;
 }
 
 //
@@ -815,12 +806,12 @@ function ct_delete_object( $object_id = 0, $force_delete = false ) {
  * @param bool   $unique     Optional. Whether the same key should not be added. Default false.
  * @return int|false Meta ID on success, false on failure.
  */
-function ct_add_object_meta( $object_id, $meta_key, $meta_value, $unique = false ) {
+function tdb_add_object_meta( $object_id, $meta_key, $meta_value, $unique = false ) {
 
-    global $wpdb, $ct_table;
+    global $wpdb, $tdb_table;
 
-    // Bail if CT_Table not supports meta data
-    if( ! $ct_table->meta ) {
+    // Bail if TDB_Table not supports meta data
+    if( ! $tdb_table->meta ) {
         return false;
     }
 
@@ -829,14 +820,14 @@ function ct_add_object_meta( $object_id, $meta_key, $meta_value, $unique = false
         return false;
     }
 
-    $primary_key = $ct_table->db->primary_key;
-    $meta_primary_key = $ct_table->meta->db->primary_key;
-    $meta_table_name = $ct_table->meta->db->table_name;
+    $primary_key = $tdb_table->db->primary_key;
+    $meta_primary_key = $tdb_table->meta->db->primary_key;
+    $meta_table_name = $tdb_table->meta->db->table_name;
 
     // expected_slashed ($meta_key)
     $meta_key = wp_unslash($meta_key);
     $meta_value = wp_unslash($meta_value);
-    $meta_value = sanitize_meta( $meta_key, $meta_value, $ct_table->name );
+    $meta_value = sanitize_meta( $meta_key, $meta_value, $tdb_table->name );
 
     /**
      * Filters whether to add metadata of a specific type.
@@ -854,7 +845,7 @@ function ct_add_object_meta( $object_id, $meta_key, $meta_value, $unique = false
      * @param bool      $unique     Whether the specified meta key should be unique
      *                              for the object. Optional. Default false.
      */
-    $check = apply_filters( "add_{$ct_table->name}_metadata", null, $object_id, $meta_key, $meta_value, $unique );
+    $check = apply_filters( "add_{$tdb_table->name}_metadata", null, $object_id, $meta_key, $meta_value, $unique );
     if ( null !== $check )
         return $check;
 
@@ -878,7 +869,7 @@ function ct_add_object_meta( $object_id, $meta_key, $meta_value, $unique = false
      * @param string $meta_key   Meta key.
      * @param mixed  $meta_value Meta value.
      */
-    do_action( "add_{$ct_table->name}_meta", $object_id, $meta_key, $_meta_value );
+    do_action( "add_{$tdb_table->name}_meta", $object_id, $meta_key, $_meta_value );
 
     $result = $wpdb->insert( $meta_table_name, array(
         $primary_key => $object_id,
@@ -891,7 +882,7 @@ function ct_add_object_meta( $object_id, $meta_key, $meta_value, $unique = false
 
     $mid = (int) $wpdb->insert_id;
 
-    wp_cache_delete( $object_id, $ct_table->meta->name );
+    wp_cache_delete( $object_id, $tdb_table->meta->name );
 
     /**
      * Fires immediately after meta of a specific type is added.
@@ -906,7 +897,7 @@ function ct_add_object_meta( $object_id, $meta_key, $meta_value, $unique = false
      * @param string $meta_key   Meta key.
      * @param mixed  $meta_value Meta value.
      */
-    do_action( "added_{$ct_table->name}_meta", $mid, $object_id, $meta_key, $_meta_value );
+    do_action( "added_{$tdb_table->name}_meta", $mid, $object_id, $meta_key, $_meta_value );
 
     return $mid;
 }
@@ -926,12 +917,12 @@ function ct_add_object_meta( $object_id, $meta_key, $meta_value, $unique = false
  *                           non-scalar. Default empty.
  * @return bool True on success, false on failure.
  */
-function ct_delete_object_meta( $object_id, $meta_key, $meta_value = '' ) {
+function tdb_delete_object_meta( $object_id, $meta_key, $meta_value = '' ) {
 
-    global $wpdb, $ct_table;
+    global $wpdb, $tdb_table;
 
-    // Bail if CT_Table not supports meta data
-    if( ! $ct_table->meta ) {
+    // Bail if TDB_Table not supports meta data
+    if( ! $tdb_table->meta ) {
         return false;
     }
 
@@ -940,9 +931,9 @@ function ct_delete_object_meta( $object_id, $meta_key, $meta_value = '' ) {
         return false;
     }
 
-    $primary_key = $ct_table->db->primary_key;
-    $meta_primary_key = $ct_table->meta->db->primary_key;
-    $meta_table_name = $ct_table->meta->db->table_name;
+    $primary_key = $tdb_table->db->primary_key;
+    $meta_primary_key = $tdb_table->meta->db->primary_key;
+    $meta_table_name = $tdb_table->meta->db->table_name;
 
     // expected_slashed ($meta_key)
     $meta_key = wp_unslash($meta_key);
@@ -966,7 +957,7 @@ function ct_delete_object_meta( $object_id, $meta_key, $meta_value = '' ) {
      *                              for all objects, ignoring the specified $object_id.
      *                              Default false.
      */
-    $check = apply_filters( "delete_{$ct_table->name}_metadata", null, $object_id, $meta_key, $meta_value, $delete_all );
+    $check = apply_filters( "delete_{$tdb_table->name}_metadata", null, $object_id, $meta_key, $meta_value, $delete_all );
     if ( null !== $check )
         return (bool) $check;
 
@@ -1007,7 +998,7 @@ function ct_delete_object_meta( $object_id, $meta_key, $meta_value = '' ) {
      * @param string $meta_key   Meta key.
      * @param mixed  $meta_value Meta value.
      */
-    do_action( "delete_{$ct_table->name}_meta", $meta_ids, $object_id, $meta_key, $_meta_value );
+    do_action( "delete_{$tdb_table->name}_meta", $meta_ids, $object_id, $meta_key, $_meta_value );
 
     $query = "DELETE FROM $meta_table_name WHERE $meta_primary_key IN( " . implode( ',', $meta_ids ) . " )";
 
@@ -1018,10 +1009,10 @@ function ct_delete_object_meta( $object_id, $meta_key, $meta_value = '' ) {
 
     if ( $delete_all ) {
         foreach ( (array) $object_ids as $o_id ) {
-            wp_cache_delete( $o_id, $ct_table->meta->name );
+            wp_cache_delete( $o_id, $tdb_table->meta->name );
         }
     } else {
-        wp_cache_delete( $object_id, $ct_table->meta->name );
+        wp_cache_delete( $object_id, $tdb_table->meta->name );
     }
 
     /**
@@ -1037,7 +1028,7 @@ function ct_delete_object_meta( $object_id, $meta_key, $meta_value = '' ) {
      * @param string $meta_key   Meta key.
      * @param mixed  $meta_value Meta value.
      */
-    do_action( "deleted_{$ct_table->name}_meta", $meta_ids, $object_id, $meta_key, $_meta_value );
+    do_action( "deleted_{$tdb_table->name}_meta", $meta_ids, $object_id, $meta_key, $_meta_value );
 
     return true;
 }
@@ -1054,12 +1045,12 @@ function ct_delete_object_meta( $object_id, $meta_key, $meta_value = '' ) {
  * @return mixed Will be an array if $single is false. Will be value of meta data
  *               field if $single is true.
  */
-function ct_get_object_meta( $object_id, $meta_key = '', $single = false ) {
+function tdb_get_object_meta( $object_id, $meta_key = '', $single = false ) {
 
-    global $wpdb, $ct_table;
+    global $wpdb, $tdb_table;
 
-    // Bail if CT_Table not supports meta data
-    if( ! $ct_table->meta ) {
+    // Bail if TDB_Table not supports meta data
+    if( ! $tdb_table->meta ) {
         return false;
     }
 
@@ -1083,7 +1074,7 @@ function ct_get_object_meta( $object_id, $meta_key = '', $single = false ) {
      * @param string            $meta_key  Meta key.
      * @param bool              $single    Whether to return only the first value of the specified $meta_key.
      */
-    $check = apply_filters( "get_{$ct_table->name}_metadata", null, $object_id, $meta_key, $single );
+    $check = apply_filters( "get_{$tdb_table->name}_metadata", null, $object_id, $meta_key, $single );
     if ( null !== $check ) {
         if ( $single && is_array( $check ) )
             return $check[0];
@@ -1091,10 +1082,10 @@ function ct_get_object_meta( $object_id, $meta_key = '', $single = false ) {
             return $check;
     }
 
-    $meta_cache = wp_cache_get( $object_id, $ct_table->meta->name );
+    $meta_cache = wp_cache_get( $object_id, $tdb_table->meta->name );
 
     if ( !$meta_cache ) {
-        $meta_cache = ct_update_meta_cache( $ct_table->meta->name, array( $object_id ) );
+        $meta_cache = tdb_update_meta_cache( $tdb_table->meta->name, array( $object_id ) );
         $meta_cache = $meta_cache[$object_id];
     }
 
@@ -1133,16 +1124,16 @@ function ct_get_object_meta( $object_id, $meta_key = '', $single = false ) {
  * @return int|bool Meta ID if the key didn't exist, true on successful update,
  *                  false on failure.
  */
-function ct_update_object_meta( $object_id, $meta_key, $meta_value, $prev_value = '' ) {
+function tdb_update_object_meta( $object_id, $meta_key, $meta_value, $prev_value = '' ) {
 
-    global $wpdb, $ct_table;
+    global $wpdb, $tdb_table;
 
-    if( ! is_a( $ct_table, 'CT_Table' ) ) {
+    if( ! is_a( $tdb_table, 'TDB_Table' ) ) {
         return false;
     }
 
-    // Bail if CT_Table not supports meta data
-    if( ! $ct_table->meta ) {
+    // Bail if TDB_Table not supports meta data
+    if( ! $tdb_table->meta ) {
         return false;
     }
 
@@ -1151,9 +1142,9 @@ function ct_update_object_meta( $object_id, $meta_key, $meta_value, $prev_value 
         return false;
     }
 
-    $primary_key = $ct_table->db->primary_key;
-    $meta_primary_key = $ct_table->meta->db->primary_key;
-    $meta_table_name = $ct_table->meta->db->table_name;
+    $primary_key = $tdb_table->db->primary_key;
+    $meta_primary_key = $tdb_table->meta->db->primary_key;
+    $meta_table_name = $tdb_table->meta->db->table_name;
 
     // Keep original values
     $raw_meta_key = $meta_key;
@@ -1162,12 +1153,12 @@ function ct_update_object_meta( $object_id, $meta_key, $meta_value, $prev_value 
     // Sanitize vars
     $meta_key = wp_unslash( $meta_key );
     $meta_value = wp_unslash( $meta_value );
-    $meta_value = sanitize_meta( $meta_key, $meta_value, $ct_table->name );
+    $meta_value = sanitize_meta( $meta_key, $meta_value, $tdb_table->name );
 
     /**
      * Filters whether to update metadata of a specific type.
      *
-     * The dynamic portion of the hook, `$ct_table->name`, refers to the meta object type.
+     * The dynamic portion of the hook, `$tdb_table->name`, refers to the meta object type.
      * Returning a non-null value will effectively short-circuit the function.
      *
      * @since 1.0.0
@@ -1180,13 +1171,13 @@ function ct_update_object_meta( $object_id, $meta_key, $meta_value, $prev_value 
      *                              metadata entries with the specified value.
      *                              Otherwise, update all entries.
      */
-    $check = apply_filters( "update_{$ct_table->name}_metadata", null, $object_id, $meta_key, $meta_value, $prev_value );
+    $check = apply_filters( "update_{$tdb_table->name}_metadata", null, $object_id, $meta_key, $meta_value, $prev_value );
     if ( null !== $check )
         return (bool) $check;
 
     // Compare existing value to new value if no prev value given and the key exists only once.
     if ( empty($prev_value) ) {
-        $old_value = ct_get_object_meta( $object_id, $meta_key );
+        $old_value = tdb_get_object_meta( $object_id, $meta_key );
         if ( count( $old_value ) == 1 ) {
             if ( $old_value[0] === $meta_value )
                 return false;
@@ -1195,7 +1186,7 @@ function ct_update_object_meta( $object_id, $meta_key, $meta_value, $prev_value 
 
     $meta_ids = $wpdb->get_col( $wpdb->prepare( "SELECT {$meta_primary_key} FROM $meta_table_name WHERE meta_key = %s AND $primary_key = %d", $meta_key, $object_id ) );
     if ( empty( $meta_ids ) ) {
-        return ct_add_object_meta( $object_id, $raw_meta_key, $passed_value );
+        return tdb_add_object_meta( $object_id, $raw_meta_key, $passed_value );
     }
 
     $_meta_value = $meta_value;
@@ -1226,15 +1217,15 @@ function ct_update_object_meta( $object_id, $meta_key, $meta_value, $prev_value 
          * @param string $meta_key   Meta key.
          * @param mixed  $meta_value Meta value.
          */
-        do_action( "update_{$ct_table->name}_meta", $meta_id, $object_id, $meta_key, $_meta_value );
+        do_action( "update_{$tdb_table->name}_meta", $meta_id, $object_id, $meta_key, $_meta_value );
     }
 
-    $result = $ct_table->meta->db->update( $data, $where );
+    $result = $tdb_table->meta->db->update( $data, $where );
 
     if ( ! $result )
         return false;
 
-    wp_cache_delete( $object_id, $ct_table->meta->name );
+    wp_cache_delete( $object_id, $tdb_table->meta->name );
 
     foreach ( $meta_ids as $meta_id ) {
         /**
@@ -1250,7 +1241,7 @@ function ct_update_object_meta( $object_id, $meta_key, $meta_value, $prev_value 
          * @param string $meta_key   Meta key.
          * @param mixed  $meta_value Meta value.
          */
-        do_action( "updated_{$ct_table->name}_meta", $meta_id, $object_id, $meta_key, $_meta_value );
+        do_action( "updated_{$tdb_table->name}_meta", $meta_id, $object_id, $meta_key, $_meta_value );
     }
 
     return true;
@@ -1267,23 +1258,23 @@ function ct_update_object_meta( $object_id, $meta_key, $meta_value, $prev_value 
  * @param int|array $object_ids Array or comma delimited list of object IDs to update cache for
  * @return array|false Metadata cache for the specified objects, or false on failure.
  */
-function ct_update_meta_cache( $meta_type, $object_ids) {
+function tdb_update_meta_cache( $meta_type, $object_ids) {
 
-    global $wpdb, $ct_table;
+    global $wpdb, $tdb_table;
 
     if ( ! $meta_type || ! $object_ids ) {
         return false;
     }
 
-    // Bail if CT_Table not supports meta data
-    if( ! $ct_table->meta ) {
+    // Bail if TDB_Table not supports meta data
+    if( ! $tdb_table->meta ) {
         return false;
     }
 
     // Setup vars
-    $primary_key = $ct_table->db->primary_key;
-    $meta_primary_key = $ct_table->meta->db->primary_key;
-    $meta_table_name = $ct_table->meta->db->table_name;
+    $primary_key = $tdb_table->db->primary_key;
+    $meta_primary_key = $tdb_table->meta->db->primary_key;
+    $meta_table_name = $tdb_table->meta->db->table_name;
 
     if ( !is_array($object_ids) ) {
         $object_ids = preg_replace('|[^0-9,]|', '', $object_ids);
@@ -1348,9 +1339,9 @@ function ct_update_meta_cache( $meta_type, $object_ids) {
  * @param int    $meta_id   ID for a specific meta row
  * @return object|false Meta object or false.
  */
-function ct_get_metadata_by_mid( $meta_type, $meta_id ) {
+function tdb_get_metadata_by_mid( $meta_type, $meta_id ) {
 
-    global $wpdb, $ct_table;
+    global $wpdb, $tdb_table;
 
     if ( ! $meta_type || ! is_numeric( $meta_id ) || floor( $meta_id ) != $meta_id ) {
         return false;
@@ -1362,14 +1353,14 @@ function ct_get_metadata_by_mid( $meta_type, $meta_id ) {
         return false;
     }
 
-    // Bail if CT_Table not supports meta data
-    if( ! $ct_table->meta ) {
+    // Bail if TDB_Table not supports meta data
+    if( ! $tdb_table->meta ) {
         return false;
     }
 
     // Setup vars
-    $meta_primary_key = $ct_table->meta->db->primary_key;
-    $meta_table_name = $ct_table->meta->db->table_name;
+    $meta_primary_key = $tdb_table->meta->db->primary_key;
+    $meta_table_name = $tdb_table->meta->db->table_name;
 
     $meta = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $meta_table_name WHERE $meta_primary_key = %d", $meta_id ) );
 
@@ -1394,9 +1385,9 @@ function ct_get_metadata_by_mid( $meta_type, $meta_id ) {
  * @param int    $meta_id   ID for a specific meta row
  * @return bool True on successful delete, false on failure.
  */
-function ct_delete_metadata_by_mid( $meta_type, $meta_id ) {
+function tdb_delete_metadata_by_mid( $meta_type, $meta_id ) {
 
-    global $wpdb, $ct_table;
+    global $wpdb, $tdb_table;
 
     // Make sure everything is valid.
     if ( ! $meta_type || ! is_numeric( $meta_id ) || floor( $meta_id ) != $meta_id ) {
@@ -1409,17 +1400,17 @@ function ct_delete_metadata_by_mid( $meta_type, $meta_id ) {
         return false;
     }
 
-    // Bail if CT_Table not supports meta data
-    if( ! $ct_table->meta ) {
+    // Bail if TDB_Table not supports meta data
+    if( ! $tdb_table->meta ) {
         return false;
     }
 
     // Setup vars
-    $meta_primary_key = $ct_table->meta->db->primary_key;
-    $meta_table_name = $ct_table->meta->db->table_name;
+    $meta_primary_key = $tdb_table->meta->db->primary_key;
+    $meta_table_name = $tdb_table->meta->db->table_name;
 
     // Fetch the meta and go on if it's found.
-    if ( $meta = ct_get_metadata_by_mid( $meta_type, $meta_id ) ) {
+    if ( $meta = tdb_get_metadata_by_mid( $meta_type, $meta_id ) ) {
         $object_id = $meta->{$meta_primary_key};
 
         /** This action is documented in wp-includes/meta.php */
@@ -1452,13 +1443,13 @@ function ct_delete_metadata_by_mid( $meta_type, $meta_id ) {
  * @param int $object_id
  * @return mixed
  */
-function ct_has_meta( $object_id ) {
+function tdb_has_meta( $object_id ) {
 
-    global $wpdb, $ct_table;
+    global $wpdb, $tdb_table;
 
-    $primary_key = $ct_table->db->primary_key;
-    $meta_primary_key = $ct_table->meta->db->primary_key;
-    $meta_table_name = $ct_table->meta->db->table_name;
+    $primary_key = $tdb_table->db->primary_key;
+    $meta_primary_key = $tdb_table->meta->db->primary_key;
+    $meta_table_name = $tdb_table->meta->db->table_name;
 
     return $wpdb->get_results( $wpdb->prepare(
         "SELECT meta_key, meta_value, meta_id, {$primary_key}
@@ -1476,12 +1467,12 @@ function ct_has_meta( $object_id ) {
  *
  * @param stdClass $object Optional. The post being edited.
  */
-function ct_meta_form( $object = null ) {
+function tdb_meta_form( $object = null ) {
 
-    global $wpdb, $ct_table;
+    global $wpdb, $tdb_table;
 
-    $primary_key = $ct_table->db->primary_key;
-    $object = ct_get_object( $object );
+    $primary_key = $tdb_table->db->primary_key;
+    $object = tdb_get_object( $object );
 
     /**
      * Filters values for the meta key dropdown in the Custom Fields meta box.
@@ -1494,7 +1485,7 @@ function ct_meta_form( $object = null ) {
      * @param array|null $keys Pre-defined meta keys to be used in place of a postmeta query. Default null.
      * @param stdClass    $object The current object.
      */
-    $keys = apply_filters( "{$ct_table->name}_meta_form_keys", null, $object );
+    $keys = apply_filters( "{$tdb_table->name}_meta_form_keys", null, $object );
 
     if ( null === $keys ) {
         /**
@@ -1505,9 +1496,9 @@ function ct_meta_form( $object = null ) {
          *
          * @param int $limit Number of custom fields to retrieve. Default 30.
          */
-        $limit = apply_filters( "{$ct_table->name}_meta_form_limit", 30 );
+        $limit = apply_filters( "{$tdb_table->name}_meta_form_limit", 30 );
         $sql = "SELECT DISTINCT meta_key
-			FROM {$ct_table->meta->db->table_name}
+			FROM {$tdb_table->meta->db->table_name}
 			WHERE meta_key NOT BETWEEN '_' AND '_z'
 			HAVING meta_key NOT LIKE %s
 			ORDER BY meta_key
@@ -1540,7 +1531,7 @@ function ct_meta_form( $object = null ) {
                         <?php
 
                         foreach ( $keys as $key ) {
-                            if ( is_protected_meta( $key, 'post' ) || ! current_user_can( $ct_table->cap->add_post_meta, $object->$primary_key, $key ) )
+                            if ( is_protected_meta( $key, 'post' ) || ! current_user_can( $tdb_table->cap->add_post_meta, $object->$primary_key, $key ) )
                                 continue;
                             echo "\n<option value='" . esc_attr($key) . "'>" . esc_html($key) . "</option>";
                         }
@@ -1579,20 +1570,20 @@ function ct_meta_form( $object = null ) {
  * @param string $name
  * @return string $url
  */
-function ct_get_list_link( $name ) {
-    global $ct_registered_tables;
+function tdb_get_list_link( $name ) {
+    global $tdb_registered_tables;
 
     // Check if table exists
-    if( ! isset( $ct_registered_tables[$name] ) ) {
+    if( ! isset( $tdb_registered_tables[$name] ) ) {
         return '';
     }
 
     // Check if table has list view
-    if( ! isset( $ct_registered_tables[$name]->views->list ) ) {
+    if( ! isset( $tdb_registered_tables[$name]->views->list ) ) {
         return '';
     }
 
-    return $ct_registered_tables[$name]->views->list->get_link();
+    return $tdb_registered_tables[$name]->views->list->get_link();
 }
 
 /**
@@ -1603,28 +1594,28 @@ function ct_get_list_link( $name ) {
  *
  * @return string
  */
-function ct_get_edit_link( $name, $object_id = 0 ) {
-    global $ct_registered_tables;
+function tdb_get_edit_link( $name, $object_id = 0 ) {
+    global $tdb_registered_tables;
 
     // Check if table exists
-    if( ! isset( $ct_registered_tables[$name] ) || $object_id === 0 ) {
+    if( ! isset( $tdb_registered_tables[$name] ) || $object_id === 0 ) {
         return '';
     }
 
     // Check if table has edit view
-    if( ! isset( $ct_registered_tables[$name]->views->edit ) ) {
+    if( ! isset( $tdb_registered_tables[$name]->views->edit ) ) {
         return '';
     }
 
     // Check if user has edit permissions
-    if( ! current_user_can( $ct_registered_tables[$name]->cap->edit_item, $object_id ) ) {
+    if( ! current_user_can( $tdb_registered_tables[$name]->cap->edit_item, $object_id ) ) {
         return '';
     }
 
-    $primary_key = $ct_registered_tables[$name]->db->primary_key;
+    $primary_key = $tdb_registered_tables[$name]->db->primary_key;
 
     // Edit link + object ID
-    return add_query_arg( array( $primary_key => $object_id ), $ct_registered_tables[$name]->views->edit->get_link() );
+    return add_query_arg( array( $primary_key => $object_id ), $tdb_registered_tables[$name]->views->edit->get_link() );
 }
 
 /**
@@ -1635,30 +1626,30 @@ function ct_get_edit_link( $name, $object_id = 0 ) {
  *
  * @return string
  */
-function ct_get_delete_link( $name, $object_id = 0 ) {
-    global $ct_registered_tables;
+function tdb_get_delete_link( $name, $object_id = 0 ) {
+    global $tdb_registered_tables;
 
     // Check if table exists
-    if( ! isset( $ct_registered_tables[$name] ) || $object_id === 0 ) {
+    if( ! isset( $tdb_registered_tables[$name] ) || $object_id === 0 ) {
         return '';
     }
 
     // Check if table has list view
-    if( ! isset( $ct_registered_tables[$name]->views->list ) ) {
+    if( ! isset( $tdb_registered_tables[$name]->views->list ) ) {
         return '';
     }
 
     // Check if user has delete permissions
-    if( ! current_user_can( $ct_registered_tables[$name]->cap->delete_item, $object_id ) ) {
+    if( ! current_user_can( $tdb_registered_tables[$name]->cap->delete_item, $object_id ) ) {
         return '';
     }
 
-    $primary_key = $ct_registered_tables[$name]->db->primary_key;
+    $primary_key = $tdb_registered_tables[$name]->db->primary_key;
 
     // List link + object ID + action delete
-    $url = $ct_registered_tables[$name]->views->list->get_link();
+    $url = $tdb_registered_tables[$name]->views->list->get_link();
     $url = add_query_arg( array( $primary_key => $object_id ), $url );
-    $url = add_query_arg( array( 'ct-action' => 'delete' ), $url );
+    $url = add_query_arg( array( 'tdb-action' => 'delete' ), $url );
 
     return $url;
 }

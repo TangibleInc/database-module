@@ -1,15 +1,9 @@
-<?php
+<?php defined( 'ABSPATH' ) || exit;
 /**
  * Rest Controller class
  *
  * Based on WP_REST_Posts_Controller class
- *
- * @author GamiPress <contact@gamipress.com>, Ruben Garcia <rubengcdev@gamil.com>
- *
- * @since 1.0.0
  */
-// Exit if accessed directly
-defined( 'ABSPATH' ) || exit;
 
 /**
  * Core class to access posts via the REST API.
@@ -18,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @see WP_REST_Controller
  */
-class CT_REST_Controller extends WP_REST_Controller {
+class TDB_REST_Controller extends WP_REST_Controller {
 
     /**
      * Table name.
@@ -33,7 +27,7 @@ class CT_REST_Controller extends WP_REST_Controller {
      *
      * @since 1.0.0
      * @access public
-     * @var CT_Table $table
+     * @var TDB_Table $table
      */
     public $table;
 
@@ -41,7 +35,7 @@ class CT_REST_Controller extends WP_REST_Controller {
      * Instance of a post meta fields object.
      *
      * @since 1.0.0
-     * @var CT_REST_Meta_Fields
+     * @var TDB_REST_Meta_Fields
      */
     protected $meta;
 
@@ -55,11 +49,11 @@ class CT_REST_Controller extends WP_REST_Controller {
     public function __construct( $name ) {
         $this->name = $name;
         $this->namespace = 'wp/v2';
-        $this->table = ct_get_table_object( $name );
+        $this->table = tdb_get_table_object( $name );
         $this->rest_base = ! empty( $this->table->rest_base ) ? $this->table->rest_base : $this->name;
 
         if( in_array( 'meta', $this->table->supports ) ) {
-            $this->meta = new CT_REST_Meta_Fields( $name );
+            $this->meta = new TDB_REST_Meta_Fields( $name );
         }
     }
 
@@ -167,11 +161,11 @@ class CT_REST_Controller extends WP_REST_Controller {
         $registered = $this->get_collection_params();
         $args = array();
 
-        $ct_table = ct_setup_table( $this->name );
+        $tdb_table = tdb_setup_table( $this->name );
 
         /*
          * This array defines mappings between public API query parameters whose
-         * values are accepted as-passed, and their internal CT_Query parameter
+         * values are accepted as-passed, and their internal TDB_Query parameter
          * name equivalents (some are the same). Only values which are also
          * present in $registered will be set.
          */
@@ -179,7 +173,7 @@ class CT_REST_Controller extends WP_REST_Controller {
             // WP_REST_Controller fields
             'page'           => 'paged',
             'search'         => 's',
-            // CT_REST_Controller fields
+            // TDB_REST_Controller fields
             'offset'         => 'offset',
             'order'          => 'order',
             'orderby'        => 'orderby',
@@ -193,10 +187,10 @@ class CT_REST_Controller extends WP_REST_Controller {
          * @since 1.0.0
          *
          * @param array             $parameter_mappings Array of parameters to map.
-         * @param CT_Table          $ct_table           Table object.
+         * @param TDB_Table          $tdb_table           Table object.
          * @param WP_REST_Request   $request            The request given.
          */
-        $parameter_mappings = apply_filters( "ct_rest_{$this->name}_parameter_mappings", $parameter_mappings, $ct_table, $request );
+        $parameter_mappings = apply_filters( "tdb_rest_{$this->name}_parameter_mappings", $parameter_mappings, $tdb_table, $request );
 
         /*
          * For each known parameter which is both registered and present in the request,
@@ -225,11 +219,11 @@ class CT_REST_Controller extends WP_REST_Controller {
          * @param array           $args    Key value array of query var to query value.
          * @param WP_REST_Request $request The request used.
          */
-        $args = apply_filters( "ct_rest_{$this->name}_query", $args, $request );
+        $args = apply_filters( "tdb_rest_{$this->name}_query", $args, $request );
         $query_args = $this->prepare_items_query( $args, $request );
 
-        $ct_query  = new CT_Query();
-        $query_result = $ct_query->query( $query_args );
+        $tdb_query  = new TDB_Query();
+        $query_result = $tdb_query->query( $query_args );
 
         $items = array();
 
@@ -243,21 +237,21 @@ class CT_REST_Controller extends WP_REST_Controller {
         }
 
         $page = (int) $query_args['paged'];
-        $total_items = $ct_query->found_results;
+        $total_items = $tdb_query->found_results;
 
         if ( $total_items < 1 ) {
             // Out-of-bounds, run the query again without LIMIT for total count.
             unset( $query_args['paged'] );
 
-            $count_query = new CT_Query();
+            $count_query = new TDB_Query();
             $count_query->query( $query_args );
             $total_items = $count_query->found_results;
         }
 
-        $max_pages = ceil( $total_items / (int) $ct_query->query_vars['items_per_page'] );
+        $max_pages = ceil( $total_items / (int) $tdb_query->query_vars['items_per_page'] );
 
         if ( $page > $max_pages && $total_items > 0 ) {
-            ct_reset_setup_table();
+            tdb_reset_setup_table();
 
             return new WP_Error( 'rest_item_invalid_page_number', __( 'The page number requested is larger than the number of pages available.' ), array( 'status' => 400 ) );
         }
@@ -287,7 +281,7 @@ class CT_REST_Controller extends WP_REST_Controller {
             $response->link_header( 'next', $next_link );
         }
 
-        ct_reset_setup_table();
+        tdb_reset_setup_table();
 
         return $response;
     }
@@ -306,12 +300,12 @@ class CT_REST_Controller extends WP_REST_Controller {
             return $error;
         }
 
-        ct_setup_table( $this->name );
+        tdb_setup_table( $this->name );
 
-        $object = ct_get_object( (int) $id );
+        $object = tdb_get_object( (int) $id );
         $primary_key = $this->table->db->primary_key;
 
-        ct_reset_setup_table();
+        tdb_reset_setup_table();
 
         if ( empty( $object ) || empty( $object->$primary_key ) ) {
             return $error;
@@ -398,7 +392,7 @@ class CT_REST_Controller extends WP_REST_Controller {
             return new WP_Error( 'rest_item_exists', __( 'Cannot create existing item.' ), array( 'status' => 400 ) );
         }
 
-        ct_setup_table( $this->name );
+        tdb_setup_table( $this->name );
 
         $prepared_object = $this->prepare_item_for_database( $request );
 
@@ -406,7 +400,7 @@ class CT_REST_Controller extends WP_REST_Controller {
             return $prepared_object;
         }
 
-        $object_id = ct_insert_object( wp_slash( (array) $prepared_object ), true );
+        $object_id = tdb_insert_object( wp_slash( (array) $prepared_object ), true );
 
         if ( is_wp_error( $object_id ) ) {
 
@@ -419,7 +413,7 @@ class CT_REST_Controller extends WP_REST_Controller {
             return $object_id;
         }
 
-        $object = ct_get_object( $object_id );
+        $object = tdb_get_object( $object_id );
 
         /**
          * Fires after a single object is created or updated via the REST API.
@@ -432,7 +426,7 @@ class CT_REST_Controller extends WP_REST_Controller {
          * @param WP_REST_Request $request  Request object.
          * @param bool            $creating True when creating a post, false when updating.
          */
-        do_action( "ct_rest_insert_{$this->name}", $object, $request, true );
+        do_action( "tdb_rest_insert_{$this->name}", $object, $request, true );
 
         $schema = $this->get_item_schema();
 
@@ -446,7 +440,7 @@ class CT_REST_Controller extends WP_REST_Controller {
 
         }
 
-        $object = ct_get_object( $object_id );
+        $object = tdb_get_object( $object_id );
         $fields_update = $this->update_additional_fields_for_object( $object, $request );
 
         if ( is_wp_error( $fields_update ) ) {
@@ -466,7 +460,7 @@ class CT_REST_Controller extends WP_REST_Controller {
          * @param WP_REST_Request $request  Request object.
          * @param bool            $creating True when creating a post, false when updating.
          */
-        do_action( "ct_rest_after_insert_{$this->name}", $object, $request, true );
+        do_action( "tdb_rest_after_insert_{$this->name}", $object, $request, true );
 
         $response = $this->prepare_item_for_response( $object, $request );
         $response = rest_ensure_response( $response );
@@ -474,7 +468,7 @@ class CT_REST_Controller extends WP_REST_Controller {
         $response->set_status( 201 );
         $response->header( 'Location', rest_url( sprintf( '%s/%s/%d', $this->namespace, $this->rest_base, $object_id ) ) );
 
-        ct_reset_setup_table();
+        tdb_reset_setup_table();
 
         return $response;
     }
@@ -514,7 +508,7 @@ class CT_REST_Controller extends WP_REST_Controller {
             return $valid_check;
         }
 
-        ct_setup_table( $this->name );
+        tdb_setup_table( $this->name );
 
         $object = $this->prepare_item_for_database( $request );
 
@@ -522,8 +516,8 @@ class CT_REST_Controller extends WP_REST_Controller {
             return $object;
         }
 
-        // Convert the object to an array, otherwise ct_update_object will expect non-escaped input.
-        $object_id = ct_update_object( wp_slash( (array) $object ), true );
+        // Convert the object to an array, otherwise tdb_update_object will expect non-escaped input.
+        $object_id = tdb_update_object( wp_slash( (array) $object ), true );
 
         if ( is_wp_error( $object_id ) ) {
             if ( 'db_update_error' === $object_id->get_error_code() ) {
@@ -534,7 +528,7 @@ class CT_REST_Controller extends WP_REST_Controller {
             return $object_id;
         }
 
-        $object = ct_get_object( $object_id );
+        $object = tdb_get_object( $object_id );
 
         /**
          * Fires after a single object is created or updated via the REST API.
@@ -547,7 +541,7 @@ class CT_REST_Controller extends WP_REST_Controller {
          * @param WP_REST_Request $request  Request object.
          * @param bool            $creating True when creating a post, false when updating.
          */
-        do_action( "ct_rest_insert_{$this->name}", $object, $request, false );
+        do_action( "tdb_rest_insert_{$this->name}", $object, $request, false );
 
         $schema = $this->get_item_schema();
 
@@ -561,7 +555,7 @@ class CT_REST_Controller extends WP_REST_Controller {
 
         }
 
-        $object = ct_get_object( $object_id );
+        $object = tdb_get_object( $object_id );
         $fields_update = $this->update_additional_fields_for_object( $object, $request );
 
         if ( is_wp_error( $fields_update ) ) {
@@ -581,11 +575,11 @@ class CT_REST_Controller extends WP_REST_Controller {
          * @param WP_REST_Request $request  Request object.
          * @param bool            $creating True when creating a post, false when updating.
          */
-        do_action( "ct_rest_after_insert_{$this->name}", $object, $request, false );
+        do_action( "tdb_rest_after_insert_{$this->name}", $object, $request, false );
 
         $response = $this->prepare_item_for_response( $object, $request );
 
-        ct_reset_setup_table();
+        tdb_reset_setup_table();
 
         return rest_ensure_response( $response );
     }
@@ -642,7 +636,7 @@ class CT_REST_Controller extends WP_REST_Controller {
          * @param bool    $supports_trash Whether the post type support trashing.
          * @param WP_Post $post           The Post object being considered for trashing support.
          */
-        $supports_trash = apply_filters( "ct_rest_{$this->name}_trashable", $supports_trash, $object );
+        $supports_trash = apply_filters( "tdb_rest_{$this->name}_trashable", $supports_trash, $object );
 
         if ( ! $this->check_delete_permission( $object ) ) {
             return new WP_Error( 'rest_user_cannot_delete_post', __( 'Sorry, you are not allowed to delete this post.' ), array( 'status' => rest_authorization_required_code() ) );
@@ -656,7 +650,7 @@ class CT_REST_Controller extends WP_REST_Controller {
         // If we're forcing, then delete permanently.
         if ( $force ) {
             $previous = $this->prepare_item_for_response( $object, $request );
-            $result = ct_delete_object( $id, true );
+            $result = tdb_delete_object( $id, true );
             $response = new WP_REST_Response();
             $response->set_data( array( 'deleted' => true, 'previous' => $previous->get_data() ) );
         } else {
@@ -673,7 +667,7 @@ class CT_REST_Controller extends WP_REST_Controller {
 
             // (Note that internally this falls through to `wp_delete_post` if the trash is disabled.)
             //$result = wp_trash_post( $id );
-            $object = ct_get_object( $id );
+            $object = tdb_get_object( $id );
             $response = $this->prepare_item_for_response( $object, $request );
         }
 
@@ -692,24 +686,24 @@ class CT_REST_Controller extends WP_REST_Controller {
          * @param WP_REST_Response $response The response data.
          * @param WP_REST_Request  $request  The request sent to the API.
          */
-        do_action( "ct_rest_delete_{$this->name}", $object, $response, $request );
+        do_action( "tdb_rest_delete_{$this->name}", $object, $response, $request );
 
         return $response;
     }
 
     /**
      * Determines the allowed query_vars for a get_items() response and prepares
-     * them for CT_Query.
+     * them for TDB_Query.
      *
      * @since 1.0.0
      *
-     * @param array           $prepared_args Optional. Prepared CT_Query arguments. Default empty array.
+     * @param array           $prepared_args Optional. Prepared TDB_Query arguments. Default empty array.
      * @param WP_REST_Request $request       Optional. Full details about the request.
      * @return array Items query arguments.
      */
     protected function prepare_items_query( $prepared_args = array(), $request = null ) {
 
-        $ct_table = $this->table;
+        $tdb_table = $this->table;
         $query_args = array();
 
         foreach ( $prepared_args as $key => $value ) {
@@ -722,10 +716,10 @@ class CT_REST_Controller extends WP_REST_Controller {
              *
              * @param string $value The query_var value.
              */
-            $query_args[ $key ] = apply_filters( "ct_rest_query_var-{$key}", $value ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+            $query_args[ $key ] = apply_filters( "tdb_rest_query_var-{$key}", $value ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
         }
 
-        // Map to proper CT_Query orderby param.
+        // Map to proper TDB_Query orderby param.
         if ( isset( $query_args['orderby'] ) && isset( $request['orderby'] ) ) {
             $orderby_mappings = array();
 
@@ -737,11 +731,11 @@ class CT_REST_Controller extends WP_REST_Controller {
              * @since 1.0.0
              *
              * @param array             $orderby_mappings   Array of parameters to map (for the orderby clause).
-             * @param CT_Table          $ct_table           Table object.
-             * @param array             $prepared_args      Prepared CT_Query arguments. Default empty array.
+             * @param TDB_Table          $tdb_table           Table object.
+             * @param array             $prepared_args      Prepared TDB_Query arguments. Default empty array.
              * @param WP_REST_Request   $request            The request given.
              */
-            $orderby_mappings = apply_filters( "ct_rest_{$this->name}_orderby_mappings", $orderby_mappings, $ct_table, $prepared_args, $request );
+            $orderby_mappings = apply_filters( "tdb_rest_{$this->name}_orderby_mappings", $orderby_mappings, $tdb_table, $prepared_args, $request );
 
             if ( isset( $orderby_mappings[ $request['orderby'] ] ) ) {
                 $query_args['orderby'] = $orderby_mappings[ $request['orderby'] ];
@@ -827,7 +821,7 @@ class CT_REST_Controller extends WP_REST_Controller {
                      *
                      * @return mixed|WP_Error   Return the field value sanitized or a WP_Error if for some reason field value is not correct
                      */
-                    $value = apply_filters( "ct_rest_{$this->name}_sanitize_field_value", $value, $field, $request );
+                    $value = apply_filters( "tdb_rest_{$this->name}_sanitize_field_value", $value, $field, $request );
 
                     // Bail if value filtered returns an error
                     if( is_wp_error( $value ) ) {
@@ -852,7 +846,7 @@ class CT_REST_Controller extends WP_REST_Controller {
          *                                       for inserting or updating the database.
          * @param WP_REST_Request $request       Request object.
          */
-        return apply_filters( "ct_rest_pre_insert_{$this->name}", $prepared_object, $request );
+        return apply_filters( "tdb_rest_pre_insert_{$this->name}", $prepared_object, $request );
 
     }
 
@@ -954,7 +948,7 @@ class CT_REST_Controller extends WP_REST_Controller {
              * @param WP_REST_Request   $request    Request object.
              * @param array             $fields     Fields defined to being returned.
              */
-            $data[$field] = apply_filters( "ct_rest_prepare_{$this->name}_field_value", $value, $field, $object, $request, $fields );
+            $data[$field] = apply_filters( "tdb_rest_prepare_{$this->name}_field_value", $value, $field, $object, $request, $fields );
         }
 
         if ( in_array( 'meta', $this->table->supports ) && in_array( 'meta', $fields, true ) ) {
@@ -979,7 +973,7 @@ class CT_REST_Controller extends WP_REST_Controller {
          * @param stdClass         $object   Object.
          * @param WP_REST_Request  $request  Request object.
          */
-        return apply_filters( "ct_rest_prepare_{$this->name}", $response, $object, $request );
+        return apply_filters( "tdb_rest_prepare_{$this->name}", $response, $object, $request );
     }
 
     /**
@@ -1020,7 +1014,7 @@ class CT_REST_Controller extends WP_REST_Controller {
          *
          * @param array $schema
          */
-        $schema = apply_filters( "ct_rest_{$this->name}_schema", $schema );
+        $schema = apply_filters( "tdb_rest_{$this->name}_schema", $schema );
 
         return $this->add_additional_fields_schema( $schema );
     }
@@ -1038,7 +1032,7 @@ class CT_REST_Controller extends WP_REST_Controller {
 
         $query_params['context']['default'] = 'view';
 
-        $ct_table = $this->table;
+        $tdb_table = $this->table;
 
         // Offset
         $query_params['offset'] = array(
@@ -1058,10 +1052,10 @@ class CT_REST_Controller extends WP_REST_Controller {
         $query_params['orderby'] = array(
             'description'        => __( 'Sort collection by object attribute.' ),
             'type'               => 'string',
-            'default'            => $ct_table->db->primary_key,
+            'default'            => $tdb_table->db->primary_key,
             'enum'               => array_merge(
                 // Allow order by table fields
-                array_keys( $ct_table->db->schema->fields ),
+                array_keys( $tdb_table->db->schema->fields ),
                 // Allow order by custom order by clauses
                 array( 'include', 'relevance'  )
             ),
@@ -1073,14 +1067,14 @@ class CT_REST_Controller extends WP_REST_Controller {
          * The dynamic part of the filter `$this->name` refers to the custom table for the controller.
          *
          * This filter registers the collection parameter, but does not map the
-         * collection parameter to an internal CT_Query parameter. Use the
-         * `ct_rest_{$this->name}_query` filter to set CT_Query parameters.
+         * collection parameter to an internal TDB_Query parameter. Use the
+         * `tdb_rest_{$this->name}_query` filter to set TDB_Query parameters.
          *
          * @since 1.0.0
          *
          * @param array     $query_params   JSON Schema-formatted collection parameters.
-         * @param CT_Table  $ct_table       Table object.
+         * @param TDB_Table  $tdb_table       Table object.
          */
-        return apply_filters( "ct_rest_{$this->name}_collection_params", $query_params, $ct_table );
+        return apply_filters( "tdb_rest_{$this->name}_collection_params", $query_params, $tdb_table );
     }
 }
