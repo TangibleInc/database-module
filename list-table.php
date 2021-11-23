@@ -3,9 +3,7 @@
 /**
  * List Table class based on WP_Posts_List_Table class
  *
- * Even though this file is loaded only on admin side, the WP_List_Table class
- * and its dependencies need to be loaded like below.
- *
+ * Using copy of WP_List_Table class as recommended in the docs
  * @see https://developer.wordpress.org/reference/classes/wp_list_table/
  */
 
@@ -18,12 +16,14 @@ if ( ! function_exists( 'get_column_headers' ) ) {
   require_once ABSPATH . 'wp-admin/includes/screen.php';
 }
 
-// Includes required WP_List_Table class
-if ( ! class_exists( 'WP_List_Table' ) ) {
-  require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
-}
+// if ( ! class_exists( 'WP_List_Table' ) ) {
+//   require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
+// }
 
-class TDB_List_Table extends WP_List_Table {
+// Base class copied from WP_List_Table
+require_once __DIR__.'/list-table-base.php';
+
+class TDB_List_Table extends TDB_List_Table_Base {
 
   /**
    * Get things started

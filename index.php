@@ -46,7 +46,7 @@ new class {
 
     $dir = TDB_DIR;
 
-    // TDB_Table and TDB_Table_Meta classes
+    // Table and table meta classes
     require_once $dir . 'table.php';
     require_once $dir . 'table-meta.php';
 
@@ -59,11 +59,11 @@ new class {
     require_once $dir . 'rest-controller.php';
     require_once $dir . 'rest-meta-fields.php';
 
-    // TDB_Query and TDB_List_Table classes
+    // Query and list table classes
     require_once $dir . 'query.php';
     if (is_admin()) require_once $dir . 'list-table.php';
 
-    // Views (List and edit)
+    // Views (list and add/edit)
     require_once $dir . 'view.php';
     require_once $dir . 'list-view.php';
     require_once $dir . 'edit-view.php';
