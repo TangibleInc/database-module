@@ -1,17 +1,13 @@
 <?php defined( 'ABSPATH' ) || exit;
 
 /**
- * List Table class
+ * List Table class based on WP_Posts_List_Table class
  *
- * Based on WP_Posts_List_Table class
+ * Even though this file is loaded only on admin side, the WP_List_Table class
+ * and its dependencies need to be loaded like below.
+ *
+ * @see https://developer.wordpress.org/reference/classes/wp_list_table/
  */
-
-/*
-
-Previously, the following were required for TDB_List_Table class.
-
-Now this class is loaded only on admin side where these functions
-are guaranteed to exist. @see ./index.php
 
 // WP_List_Table dependencies
 if ( ! function_exists( 'convert_to_screen' ) ) {
@@ -26,7 +22,6 @@ if ( ! function_exists( 'get_column_headers' ) ) {
 if ( ! class_exists( 'WP_List_Table' ) ) {
   require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
 }
-*/
 
 class TDB_List_Table extends WP_List_Table {
 
