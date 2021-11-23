@@ -2,427 +2,421 @@
 
 class TDB_List_View extends TDB_View {
 
-    protected $per_page = 20;
+  protected $per_page = 20;
 
-    protected $columns = array();
+  protected $columns = array();
 
-    public function __construct( $name, $args ) {
+  public function __construct( $name, $args ) {
 
-        parent::__construct( $name, $args );
+    parent::__construct( $name, $args );
 
-        $this->per_page = isset( $args['per_page'] ) ? $args['per_page'] : 20;
-        $this->columns  = isset( $args['columns'] ) ? $args['columns'] : array();
+    $this->per_page = isset( $args['per_page'] ) ? $args['per_page'] : 20;
+    $this->columns  = isset( $args['columns'] ) ? $args['columns'] : array();
+  }
+
+  public function add_hooks() {
+
+    parent::add_hooks();
+
+    add_filter( "manage_{$this->name}_columns", array( $this, 'get_columns' ) );
+    add_filter( "manage_{$this->name}_sortable_columns", array( $this, 'get_sortable_columns' ) );
+
+  }
+
+  /**
+   * Set columns passed from view columns arg.
+   *
+   * @param array $columns
+   *
+   * @return array
+   */
+  public function get_columns( $columns ) {
+
+    foreach( $this->columns as $column => $column_args ) {
+
+      if( is_array( $column_args ) && isset( $column_args['label'] ) ) {
+        // 'column_name' => array( 'label' => 'Column Label' )
+        $columns[$column] = $column_args['label'];
+      } else if( gettype( $column_args ) === 'string' ) {
+        // 'column_name' => 'Column Label'
+        $columns[$column] = $column_args;
+      }
 
     }
 
-    public function add_hooks() {
+    return $columns;
+  }
 
-        parent::add_hooks();
+  /**
+  * Set columns passed from view columns arg.
+  *
+  * @since 1.0.0
+  *
+  * @param array $sortable_columns
+  *
+  * @return array
+  */
+  public function get_sortable_columns( $sortable_columns ) {
 
-        add_filter( "manage_{$this->name}_columns", array( $this, 'get_columns' ) );
-        add_filter( "manage_{$this->name}_sortable_columns", array( $this, 'get_sortable_columns' ) );
+    foreach( $this->columns as $column => $column_args ) {
+
+      if( is_array( $column_args ) && isset( $column_args['sortable'] ) ) {
+        // 'column_name' => array( 'sortable' => 'sortable_setup' )
+        $sortable_columns[$column] = $column_args['sortable'];
+      }
 
     }
+
+    return $sortable_columns;
+
+  }
+
+  public function init() {
+
+    global $tdb_registered_tables, $tdb_table, $tdb_query, $tdb_list_table;
+
+    if( ! isset( $tdb_registered_tables[$this->name] ) ) {
+      return;
+    }
+
+    // Setup TDB_Table
+    $tdb_table = $tdb_registered_tables[$this->name];
+
+    // Check for bulk delete
+    if( isset( $_GET['action'] ) ) {
+
+      if( $_GET['action'] === 'delete' ) {
+        // Deleting
+        $this->bulk_delete();
+      }
+
+    }
+
+    // Check for delete action
+    if( isset( $_GET['tdb-action'] ) ) {
+
+      if( $_GET['tdb-action'] === 'delete' ) {
+        // Deleting
+        $this->delete();
+      }
+
+    }
+
+    // Setup the query and the list table objects
+    $tdb_query = new TDB_Query( $_GET );
+    $tdb_list_table = new TDB_List_Table();
+
+  }
+
+  /**
+  * Screen settings text displayed in the Screen Options tab.
+  *
+  * @since 1.0.0
+  *
+  * @param string    $screen_settings    Screen settings.
+  * @param WP_Screen $screen             WP_Screen object.
+  */
+  public function screen_settings( $screen_settings, $screen ) {
+
+    $this->render_list_table_columns_preferences();
+    $this->render_per_page_options();
+
+  }
+
+  /**
+  * Render the list table columns preferences.
+  *
+  * @since 1.0.0
+  */
+  public function render_list_table_columns_preferences() {
+
+    global $tdb_table, $tdb_list_table;
+
+    // Set up vars
+    $columns = $tdb_list_table->get_columns();
+    $hidden  = get_hidden_columns( $tdb_table->name );
+
+    if ( ! $columns )
+    return;
+
+    $legend = ! empty( $columns['_title'] ) ? $columns['_title'] : __( 'Columns' );
+    ?>
+    <fieldset class="metabox-prefs">
+    <legend><?php echo $legend; ?></legend>
+    <?php
+    $special = array( '_title', 'cb' );
+
+    foreach ( $columns as $column => $title ) {
+      // Can't hide these for they are special
+      if ( in_array( $column, $special ) || empty( $title ) ) {
+        continue;
+      }
+
+      $id = "$column-hide";
+      echo '<label>';
+      echo '<input class="hide-column-tog" name="' . $id . '" type="checkbox" id="' . $id . '" value="' . $column . '"' . checked( ! in_array( $column, $hidden ), true, false ) . ' />';
+      echo "$title</label>\n";
+    }
+    ?>
+    </fieldset>
+    <?php
+  }
+
+  /**
+  * Render the items per page option
+  *
+  * @since 1.0.0
+  */
+  public function render_per_page_options() {
+
+    global $tdb_table;
+
+    if ( ! $this->per_page ) {
+      return;
+    }
+
+    // Set up vars
+    $per_page_label = __( 'Number of items per page:' );
+
+    $option = str_replace( '-', '_', "edit_{$tdb_table->name}_per_page" );
+
+    $per_page = (int) get_user_option( $option );
+
+    if ( empty( $per_page ) || $per_page < 1 )
+    $per_page = $this->per_page;
+
+    $per_page = apply_filters( "{$option}", $per_page );
+
+    // This needs a submit button
+    add_filter( 'screen_options_show_submit', '__return_true' );
+
+    ?>
+    <fieldset class="screen-options">
+    <legend><?php _e( 'Pagination' ); ?></legend>
+    <?php if ( $per_page_label ) : ?>
+      <label for="<?php echo esc_attr( $option ); ?>"><?php echo $per_page_label; ?></label>
+      <input type="number" step="1" min="1" max="999" class="screen-per-page" name="wp_screen_options[value]"
+      id="<?php echo esc_attr( $option ); ?>" maxlength="3"
+      value="<?php echo esc_attr( $per_page ); ?>" />
+      <?php endif; ?>
+      <input type="hidden" name="wp_screen_options[option]" value="<?php echo esc_attr( $option ); ?>" />
+      </fieldset>
+    <?php
+  }
+
+  /**
+   * Screen option value before it is set.
+   *
+   * @since 1.0.0
+   *
+   * @param bool|int $value_to_set    Screen option value to set. Default false to skip.
+   * @param string   $option          The option name.
+   * @param int      $value           The option value.
+   *
+   * @return bool|mixed               False to skip or any other value to set as option value
+   */
+  public function set_screen_settings( $value_to_set, $option, $value ) {
+
+    global $tdb_table, $tdb_list_table;
+
+    if( ! $tdb_table ) {
+      return $value_to_set;
+    }
+
+    if( ! $tdb_list_table ) {
+      return $value_to_set;
+    }
+
+    $view_settings = array(
+      str_replace( '-', '_', "edit_{$tdb_table->name}_per_page" ) // Per page
+    );
+
+    // Columns hidden setting
+    $columns = $tdb_list_table->get_columns();
+    $special = array( '_title', 'cb' );
+
+    foreach ( $columns as $column => $title ) {
+      // Can't hide these for they are special
+      if ( in_array( $column, $special ) || empty( $title ) )
+      continue;
+
+      $view_settings[] = "$column-hide";
+    }
+
+    // If option is on this view settings list, then save it
+    if( in_array( $option, $view_settings ) ) {
+      $value_to_set = $value;
+    }
+
+    return $value_to_set;
+  }
+
+  public function bulk_delete() {
+
+    global $tdb_table;
+
+    // If not TDB object, die
+    if ( ! $tdb_table )
+    wp_die( __( 'Invalid item type.' ) );
+
+    // If not TDB object allow ui, die
+    if ( ! $tdb_table->show_ui ) {
+      wp_die( __( 'Sorry, you are not allowed to delete items of this type.' ) );
+    }
+
+    $object_ids = array();
+
+    // Check received items
+    if ( ! empty( $_REQUEST['item'] ) ) {
+      $object_ids = array_map('intval', $_REQUEST['item']);
+    }
+
+    $deleted = 0;
+
+    foreach ( (array) $object_ids as $object_id ) {
+
+      // If not current user can delete, die
+      if ( ! current_user_can( $tdb_table->cap->delete_item, $object_id ) ) {
+        wp_die( __( 'Sorry, you are not allowed to delete this item.' ) );
+      }
+
+      if ( ! tdb_delete_object( $object_id, true ) )
+      wp_die( __( 'Error in deleting.' ) );
+
+      $deleted++;
+    }
+
+    $location = add_query_arg( array( 'deleted' => $deleted ), $this->get_link() );
+
+    wp_redirect( $location );
+    exit;
+  }
+
+  public function delete() {
+
+    global $tdb_table;
+
+    // If not TDB object, die
+    if ( ! $tdb_table )
+    wp_die( __( 'Invalid item type.' ) );
+
+    // If not TDB object allow ui, die
+    if ( ! $tdb_table->show_ui ) {
+      wp_die( __( 'Sorry, you are not allowed to delete items of this type.' ) );
+    }
+
+    $primary_key = $tdb_table->db->primary_key;
+
+    // Object ID is required
+    if( ! isset( $_GET[$primary_key] ) ) {
+      wp_die( __( 'Sorry, you are not allowed to delete items of this type.' ) );
+    }
+
+    $object_id = (int) $_GET[$primary_key];
+
+    // If not current user can delete, die
+    if ( ! current_user_can( $tdb_table->cap->delete_item, $object_id ) ) {
+      wp_die( __( 'Sorry, you are not allowed to delete this item.' ) );
+    }
+
+    if ( ! tdb_delete_object( $object_id ) )
+    wp_die( __( 'Error in deleting.' ) );
+
+    $location = add_query_arg( array( 'deleted' => 1 ), $this->get_link() );
+
+    wp_redirect( $location );
+    exit;
+
+  }
+
+  /**
+  * View content.
+  *
+  * @since 1.0.0
+  */
+  public function render() {
+
+    global $tdb_table, $tdb_list_table;
+
+    $tdb_list_table->prepare_items();
+
+    $bulk_counts = array(
+      'updated'   => isset( $_REQUEST['updated'] )   ? absint( $_REQUEST['updated'] )   : 0,
+      'locked'    => isset( $_REQUEST['locked'] )    ? absint( $_REQUEST['locked'] )    : 0,
+      'deleted'   => isset( $_REQUEST['deleted'] )   ? absint( $_REQUEST['deleted'] )   : 0,
+      'trashed'   => isset( $_REQUEST['trashed'] )   ? absint( $_REQUEST['trashed'] )   : 0,
+      'untrashed' => isset( $_REQUEST['untrashed'] ) ? absint( $_REQUEST['untrashed'] ) : 0,
+    );
+
+    $bulk_messages = array(
+      'updated'   => _n( '%s item updated.', '%s items updated.', $bulk_counts['updated'] ),
+      'locked'    => ( 1 == $bulk_counts['locked'] ) ? __( '1 item not updated, somebody is editing it.' ) :
+      _n( '%s item not updated, somebody is editing it.', '%s items not updated, somebody is editing them.', $bulk_counts['locked'] ),
+      'deleted'   => _n( '%s item permanently deleted.', '%s items permanently deleted.', $bulk_counts['deleted'] ),
+      'trashed'   => _n( '%s item moved to the Trash.', '%s items moved to the Trash.', $bulk_counts['trashed'] ),
+      'untrashed' => _n( '%s item restored from the Trash.', '%s items restored from the Trash.', $bulk_counts['untrashed'] ),
+    );
 
     /**
-     * Set columns passed from view columns arg.
-     *
-     * @since 1.0.0
-     *
-     * @param array $columns
-     *
-     * @return array
-     */
-    public function get_columns( $columns ) {
+    * Filters the bulk action updated messages.
+    *
+    * @since 1.0.0
+    *
+    * @param array $bulk_messages Arrays of messages. Messages are keyed with 'updated', 'locked', 'deleted', 'trashed', and 'untrashed'.
+    * @param array $bulk_counts   Array of item counts for each message, used to build internationalized strings.
+    */
+    $bulk_messages = apply_filters( 'bulk_object_updated_messages', $bulk_messages, $bulk_counts );
+    $bulk_counts = array_filter( $bulk_counts );
 
-        foreach( $this->columns as $column => $column_args ) {
+    ?>
 
-            if( is_array( $column_args ) && isset( $column_args['label'] ) ) {
-                // 'column_name' => array( 'label' => 'Column Label' )
-                $columns[$column] = $column_args['label'];
-            } else if( gettype( $column_args ) === 'string' ) {
-                // 'column_name' => 'Column Label'
-                $columns[$column] = $column_args;
-            }
+    <div class="wrap">
 
-        }
+    <h1 class="wp-heading-inline"><?php echo $tdb_table->labels->plural_name; ?></h1>
 
-        return $columns;
+    <?php if ( property_exists( $tdb_table->views, 'add' ) && $tdb_table->views->add && current_user_can( $tdb_table->cap->create_items ) ) :
+      echo ' <a href="' . esc_url( $tdb_table->views->add->get_link() ) . '" class="page-title-action">' . esc_html( $tdb_table->labels->add_new_item ) . '</a>';
+    endif; ?>
 
+    <hr class="wp-header-end">
+
+    <?php
+    // If we have a bulk message to issue:
+    $messages = array();
+    foreach ( $bulk_counts as $message => $count ) {
+      if ( isset( $bulk_messages[ $message ] ) )
+      $messages[] = sprintf( $bulk_messages[ $message ], number_format_i18n( $count ) );
+
+      //if ( $message == 'trashed' && isset( $_REQUEST['ids'] ) ) {
+        //$ids = preg_replace( '/[^0-9,]/', '', $_REQUEST['ids'] );
+        //$messages[] = '<a href="' . esc_url( wp_nonce_url( "edit.php?post_type=$post_type&doaction=undo&action=untrash&ids=$ids", "bulk-posts" ) ) . '">' . __('Undo') . '</a>';
+        //}
     }
 
-    /**
-     * Set columns passed from view columns arg.
-     *
-     * @since 1.0.0
-     *
-     * @param array $sortable_columns
-     *
-     * @return array
-     */
-    public function get_sortable_columns( $sortable_columns ) {
+    if ( $messages )
+    echo '<div id="message" class="updated notice is-dismissible"><p>' . join( ' ', $messages ) . '</p></div>';
+    unset( $messages );
 
-        foreach( $this->columns as $column => $column_args ) {
+    $_SERVER['REQUEST_URI'] = remove_query_arg( array( 'locked', 'skipped', 'updated', 'deleted', 'trashed', 'untrashed' ), $_SERVER['REQUEST_URI'] );
+    ?>
 
-            if( is_array( $column_args ) && isset( $column_args['sortable'] ) ) {
-                // 'column_name' => array( 'sortable' => 'sortable_setup' )
-                $sortable_columns[$column] = $column_args['sortable'];
-            }
+    <?php $tdb_list_table->views(); ?>
 
-        }
+    <form id="ct-list-filter" method="get">
 
-        return $sortable_columns;
+    <input type="hidden" name="page" value="<?php echo esc_attr( $this->args['menu_slug'] ); ?>" />
 
-    }
+    <?php $tdb_list_table->search_box( $tdb_table->labels->search_items, $tdb_table->name ); ?>
 
-    public function init() {
+    <?php $tdb_list_table->display(); ?>
 
-        global $tdb_registered_tables, $tdb_table, $tdb_query, $tdb_list_table;
+    </form>
 
-        if( ! isset( $tdb_registered_tables[$this->name] ) ) {
-            return;
-        }
+    <div id="ajax-response"></div>
+    <br class="clear" />
 
-        // Setup TDB_Table
-        $tdb_table = $tdb_registered_tables[$this->name];
+    </div>
 
-        // Check for bulk delete
-        if( isset( $_GET['action'] ) ) {
-
-            if( $_GET['action'] === 'delete' ) {
-                // Deleting
-                $this->bulk_delete();
-            }
-
-        }
-
-        // Check for delete action
-        if( isset( $_GET['tdb-action'] ) ) {
-
-            if( $_GET['tdb-action'] === 'delete' ) {
-                // Deleting
-                $this->delete();
-            }
-
-        }
-
-        // Setup the query and the list table objects
-        $tdb_query = new TDB_Query( $_GET );
-        $tdb_list_table = new TDB_List_Table();
-
-    }
-
-    /**
-     * Screen settings text displayed in the Screen Options tab.
-     *
-     * @since 1.0.0
-     *
-     * @param string    $screen_settings    Screen settings.
-     * @param WP_Screen $screen             WP_Screen object.
-     */
-    public function screen_settings( $screen_settings, $screen ) {
-
-        $this->render_list_table_columns_preferences();
-        $this->render_per_page_options();
-
-    }
-
-    /**
-     * Render the list table columns preferences.
-     *
-     * @since 1.0.0
-     */
-    public function render_list_table_columns_preferences() {
-
-        global $tdb_table, $tdb_list_table;
-
-        // Set up vars
-        $columns = $tdb_list_table->get_columns();
-        $hidden  = get_hidden_columns( $tdb_table->name );
-
-        if ( ! $columns )
-            return;
-
-        $legend = ! empty( $columns['_title'] ) ? $columns['_title'] : __( 'Columns' );
-        ?>
-        <fieldset class="metabox-prefs">
-            <legend><?php echo $legend; ?></legend>
-            <?php
-            $special = array( '_title', 'cb' );
-
-            foreach ( $columns as $column => $title ) {
-                // Can't hide these for they are special
-                if ( in_array( $column, $special ) || empty( $title ) ) {
-                    continue;
-                }
-
-                $id = "$column-hide";
-                echo '<label>';
-                echo '<input class="hide-column-tog" name="' . $id . '" type="checkbox" id="' . $id . '" value="' . $column . '"' . checked( ! in_array( $column, $hidden ), true, false ) . ' />';
-                echo "$title</label>\n";
-            }
-            ?>
-        </fieldset>
-        <?php
-    }
-
-    /**
-     * Render the items per page option
-     *
-     * @since 1.0.0
-     */
-    public function render_per_page_options() {
-
-        global $tdb_table;
-
-        if ( ! $this->per_page ) {
-            return;
-        }
-
-        // Set up vars
-        $per_page_label = __( 'Number of items per page:' );
-
-        $option = str_replace( '-', '_', "edit_{$tdb_table->name}_per_page" );
-
-        $per_page = (int) get_user_option( $option );
-
-        if ( empty( $per_page ) || $per_page < 1 )
-            $per_page = $this->per_page;
-
-        $per_page = apply_filters( "{$option}", $per_page );
-
-        // This needs a submit button
-        add_filter( 'screen_options_show_submit', '__return_true' );
-
-        ?>
-        <fieldset class="screen-options">
-            <legend><?php _e( 'Pagination' ); ?></legend>
-            <?php if ( $per_page_label ) : ?>
-                <label for="<?php echo esc_attr( $option ); ?>"><?php echo $per_page_label; ?></label>
-                <input type="number" step="1" min="1" max="999" class="screen-per-page" name="wp_screen_options[value]"
-                        id="<?php echo esc_attr( $option ); ?>" maxlength="3"
-                        value="<?php echo esc_attr( $per_page ); ?>" />
-            <?php endif; ?>
-            <input type="hidden" name="wp_screen_options[option]" value="<?php echo esc_attr( $option ); ?>" />
-        </fieldset>
-        <?php
-    }
-
-    /**
-     * Screen option value before it is set.
-     *
-     * @since 1.0.0
-     *
-     * @param bool|int $value_to_set    Screen option value to set. Default false to skip.
-     * @param string   $option          The option name.
-     * @param int      $value           The option value.
-     *
-     * @return bool|mixed               False to skip or any other value to set as option value
-     */
-    public function set_screen_settings( $value_to_set, $option, $value ) {
-
-        global $tdb_table, $tdb_list_table;
-
-        if( ! $tdb_table ) {
-            return $value_to_set;
-        }
-
-        if( ! $tdb_list_table ) {
-            return $value_to_set;
-        }
-
-        $view_settings = array(
-            str_replace( '-', '_', "edit_{$tdb_table->name}_per_page" ) // Per page
-        );
-
-        // Columns hidden setting
-        $columns = $tdb_list_table->get_columns();
-        $special = array( '_title', 'cb' );
-
-        foreach ( $columns as $column => $title ) {
-            // Can't hide these for they are special
-            if ( in_array( $column, $special ) || empty( $title ) )
-                continue;
-
-            $view_settings[] = "$column-hide";
-        }
-
-        // If option is on this view settings list, then save it
-        if( in_array( $option, $view_settings ) ) {
-            $value_to_set = $value;
-        }
-
-        return $value_to_set;
-
-    }
-
-    public function bulk_delete() {
-
-        global $tdb_table;
-
-        // If not TDB object, die
-        if ( ! $tdb_table )
-            wp_die( __( 'Invalid item type.' ) );
-
-        // If not TDB object allow ui, die
-        if ( ! $tdb_table->show_ui ) {
-            wp_die( __( 'Sorry, you are not allowed to delete items of this type.' ) );
-        }
-
-        $object_ids = array();
-
-        // Check received items
-        if ( ! empty( $_REQUEST['item'] ) ) {
-            $object_ids = array_map('intval', $_REQUEST['item']);
-        }
-
-        $deleted = 0;
-
-  foreach ( (array) $object_ids as $object_id ) {
-
-            // If not current user can delete, die
-            if ( ! current_user_can( $tdb_table->cap->delete_item, $object_id ) ) {
-                wp_die( __( 'Sorry, you are not allowed to delete this item.' ) );
-            }
-
-            if ( ! tdb_delete_object( $object_id, true ) )
-                wp_die( __( 'Error in deleting.' ) );
-
-            $deleted++;
-        }
-
-        $location = add_query_arg( array( 'deleted' => $deleted ), $this->get_link() );
-
-        wp_redirect( $location );
-        exit;
-    }
-
-    public function delete() {
-
-        global $tdb_table;
-
-        // If not TDB object, die
-        if ( ! $tdb_table )
-            wp_die( __( 'Invalid item type.' ) );
-
-        // If not TDB object allow ui, die
-        if ( ! $tdb_table->show_ui ) {
-            wp_die( __( 'Sorry, you are not allowed to delete items of this type.' ) );
-        }
-
-        $primary_key = $tdb_table->db->primary_key;
-
-        // Object ID is required
-        if( ! isset( $_GET[$primary_key] ) ) {
-            wp_die( __( 'Sorry, you are not allowed to delete items of this type.' ) );
-        }
-
-        $object_id = (int) $_GET[$primary_key];
-
-        // If not current user can delete, die
-        if ( ! current_user_can( $tdb_table->cap->delete_item, $object_id ) ) {
-            wp_die( __( 'Sorry, you are not allowed to delete this item.' ) );
-        }
-
-        if ( ! tdb_delete_object( $object_id ) )
-            wp_die( __( 'Error in deleting.' ) );
-
-        $location = add_query_arg( array( 'deleted' => 1 ), $this->get_link() );
-
-        wp_redirect( $location );
-        exit;
-
-    }
-
-    /**
-     * View content.
-     *
-     * @since 1.0.0
-     */
-    public function render() {
-
-        global $tdb_table, $tdb_list_table;
-
-        $tdb_list_table->prepare_items();
-
-        $bulk_counts = array(
-            'updated'   => isset( $_REQUEST['updated'] )   ? absint( $_REQUEST['updated'] )   : 0,
-            'locked'    => isset( $_REQUEST['locked'] )    ? absint( $_REQUEST['locked'] )    : 0,
-            'deleted'   => isset( $_REQUEST['deleted'] )   ? absint( $_REQUEST['deleted'] )   : 0,
-            'trashed'   => isset( $_REQUEST['trashed'] )   ? absint( $_REQUEST['trashed'] )   : 0,
-            'untrashed' => isset( $_REQUEST['untrashed'] ) ? absint( $_REQUEST['untrashed'] ) : 0,
-        );
-
-        $bulk_messages = array(
-            'updated'   => _n( '%s item updated.', '%s items updated.', $bulk_counts['updated'] ),
-            'locked'    => ( 1 == $bulk_counts['locked'] ) ? __( '1 item not updated, somebody is editing it.' ) :
-                _n( '%s item not updated, somebody is editing it.', '%s items not updated, somebody is editing them.', $bulk_counts['locked'] ),
-            'deleted'   => _n( '%s item permanently deleted.', '%s items permanently deleted.', $bulk_counts['deleted'] ),
-            'trashed'   => _n( '%s item moved to the Trash.', '%s items moved to the Trash.', $bulk_counts['trashed'] ),
-            'untrashed' => _n( '%s item restored from the Trash.', '%s items restored from the Trash.', $bulk_counts['untrashed'] ),
-        );
-
-        /**
-         * Filters the bulk action updated messages.
-         *
-         * @since 1.0.0
-         *
-         * @param array $bulk_messages Arrays of messages. Messages are keyed with 'updated', 'locked', 'deleted', 'trashed', and 'untrashed'.
-         * @param array $bulk_counts   Array of item counts for each message, used to build internationalized strings.
-         */
-        $bulk_messages = apply_filters( 'bulk_object_updated_messages', $bulk_messages, $bulk_counts );
-        $bulk_counts = array_filter( $bulk_counts );
-
-        ?>
-
-        <div class="wrap">
-
-            <h1 class="wp-heading-inline"><?php echo $tdb_table->labels->plural_name; ?></h1>
-
-            <?php if ( property_exists( $tdb_table->views, 'add' ) && $tdb_table->views->add && current_user_can( $tdb_table->cap->create_items ) ) :
-                echo ' <a href="' . esc_url( $tdb_table->views->add->get_link() ) . '" class="page-title-action">' . esc_html( $tdb_table->labels->add_new_item ) . '</a>';
-            endif; ?>
-
-            <hr class="wp-header-end">
-
-            <?php
-            // If we have a bulk message to issue:
-            $messages = array();
-            foreach ( $bulk_counts as $message => $count ) {
-                if ( isset( $bulk_messages[ $message ] ) )
-                    $messages[] = sprintf( $bulk_messages[ $message ], number_format_i18n( $count ) );
-
-                //if ( $message == 'trashed' && isset( $_REQUEST['ids'] ) ) {
-                    //$ids = preg_replace( '/[^0-9,]/', '', $_REQUEST['ids'] );
-                    //$messages[] = '<a href="' . esc_url( wp_nonce_url( "edit.php?post_type=$post_type&doaction=undo&action=untrash&ids=$ids", "bulk-posts" ) ) . '">' . __('Undo') . '</a>';
-                //}
-            }
-
-            if ( $messages )
-                echo '<div id="message" class="updated notice is-dismissible"><p>' . join( ' ', $messages ) . '</p></div>';
-            unset( $messages );
-
-            $_SERVER['REQUEST_URI'] = remove_query_arg( array( 'locked', 'skipped', 'updated', 'deleted', 'trashed', 'untrashed' ), $_SERVER['REQUEST_URI'] );
-            ?>
-
-            <?php $tdb_list_table->views(); ?>
-
-            <form id="ct-list-filter" method="get">
-
-                <input type="hidden" name="page" value="<?php echo esc_attr( $this->args['menu_slug'] ); ?>" />
-
-                <?php $tdb_list_table->search_box( $tdb_table->labels->search_items, $tdb_table->name ); ?>
-
-                <?php $tdb_list_table->display(); ?>
-
-            </form>
-
-            <div id="ajax-response"></div>
-            <br class="clear" />
-
-        </div>
-
-        <?php
-    }
-
+    <?php
+  }
 }

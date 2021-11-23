@@ -25,9 +25,9 @@ new class {
     // self::ensure_action();
 
     // Hook in to the earliest hook we have available
-    add_action( 'muplugins_loaded',  array( __CLASS__, 'ensure_action' ), 0 );
-    add_action( 'plugins_loaded',    array( __CLASS__, 'ensure_action' ), 0 );
-    add_action( 'after_setup_theme', array( __CLASS__, 'ensure_action' ), 0 );
+    add_action('muplugins_loaded',  [__CLASS__, 'ensure_action'], 0);
+    add_action('plugins_loaded',    [__CLASS__, 'ensure_action'], 0);
+    add_action('after_setup_theme', [__CLASS__, 'ensure_action'], 0);
   }
 
   static function ensure_action() {
