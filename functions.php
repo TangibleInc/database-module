@@ -41,20 +41,19 @@ function tdb_register_table( $name, $args ) {
  */
 function tdb_setup_table( $object ) {
 
-    global $tdb_registered_tables, $tdb_previous_table, $tdb_table;
+  global $tdb_registered_tables, $tdb_previous_table, $tdb_table;
 
-    if( is_object( $tdb_table ) ) {
-        $tdb_previous_table = $tdb_table;
-    }
+  if( is_object( $tdb_table ) ) {
+      $tdb_previous_table = $tdb_table;
+  }
 
-    if( is_object( $object ) ) {
-        $tdb_table = $object;
-    } else if( gettype( $object ) === 'string' && isset( $tdb_registered_tables[$object] ) ) {
-        $tdb_table = $tdb_registered_tables[$object];
-    }
+  if( is_object( $object ) ) {
+      $tdb_table = $object;
+  } else if( gettype( $object ) === 'string' && isset( $tdb_registered_tables[$object] ) ) {
+      $tdb_table = $tdb_registered_tables[$object];
+  }
 
-    return $tdb_table;
-
+  return $tdb_table;
 }
 
 /**
@@ -66,14 +65,13 @@ function tdb_setup_table( $object ) {
  */
 function tdb_reset_setup_table() {
 
-    global $tdb_registered_tables, $tdb_previous_table, $tdb_table;
+  global $tdb_registered_tables, $tdb_previous_table, $tdb_table;
 
-    if( is_object( $tdb_previous_table ) ) {
-        $tdb_table = $tdb_previous_table;
-    }
+  if( is_object( $tdb_previous_table ) ) {
+    $tdb_table = $tdb_previous_table;
+  }
 
-    return $tdb_table;
-
+  return $tdb_table;
 }
 
 /**
