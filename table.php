@@ -381,8 +381,37 @@ class TDB_Table {
       'show_in_menu'          => null,
       'show_in_nav_menus'     => null,
       'show_in_admin_bar'     => null,
+
+      /**
+       * Menu position
+       *
+       * Default: below Comments
+       *
+       * 5 – below Posts
+       * 10 – below Media
+       * 15 – below Links
+       * 20 – below Pages
+       * 25 – below comments
+       * 60 – below first separator
+       * 65 – below Plugins
+       * 70 – below Users
+       * 75 – below Tools
+       * 80 – below Settings
+       * 100 – below second separator
+       */
       'menu_position'         => 30,
+
+      /**
+       * Menu icon
+       *
+       * - The url to the icon to be used for this menu.
+       * - Pass a base64-encoded SVG using a data URI, which will be colored to match
+       * the color scheme -- this should begin with 'data:image/svg+xml;base64,'.
+       * - Pass the name of a Dashicons helper class to use a font icon, e.g. 'dashicons-chart-pie'.
+       * - Pass 'none' to leave div.wp-menu-image empty so an icon can be added via CSS. Defaults to use the posts icon.
+       */
       'menu_icon'             => null,
+
       'capability_type'       => 'item',
       'capabilities'          => array(),
       'map_meta_cap'          => null,
@@ -629,7 +658,30 @@ class TDB_Table {
       );
     }
 
+    /**
+     * If any views are to be shown in admin menu, add the top menu
+     *
+     * Submenu items are added in TDB_View class, admin_menu()
+     *
+     * @see https://developer.wordpress.org/reference/functions/add_menu_page/
+     */
+    if ($this->show_ui) {
+      foreach (['list', 'add'] as $key) {
+        if (!$this->views->$key || !$this->views->$key->args['show_in_menu']) continue;
+        add_menu_page(
+          $args['plural'], // Page title
+          $args['plural'], // Menu title
+          isset($args['capabilities']) ? $args['capabilities'] : (
+            isset($args['capability']) ? $args['capability'] : ''
+          ),
+          $this->name, // Menu slug
+          null, // Callback
+          $args['menu_icon'],
+          $args['menu_position']
         );
+        break;
+      }
+    }
 
     // Meta data
     if( in_array( 'meta', $this->supports ) ) {
