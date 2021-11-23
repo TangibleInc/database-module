@@ -4,8 +4,8 @@
  */
 new class {
 
-  const VERSION     = '20211118'; // Must be in format YYYYMMDD
-  const ACTION_NAME = 'tangible_database_load';
+  const VERSION     = '20211123'; // Must be in format YYYYMMDD
+  const ACTION_NAME = 'tangible_database_module_load';
 
   function __construct() {
 
