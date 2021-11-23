@@ -3,6 +3,8 @@
  * Compatibility with CMB2
  */
 
+if (!class_exists('CMB2_Boxes')) return;
+
 /**
  * Check if should override on admin init action
  *
