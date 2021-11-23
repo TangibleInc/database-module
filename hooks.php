@@ -7,6 +7,10 @@ function tdb_rest_api_init() {
 
     global $tdb_registered_tables;
 
+    if (!isset($tdb_registered_tables)) {
+      $tdb_registered_tables = [];
+    }
+
     foreach( $tdb_registered_tables as $tdb_table ) {
 
         // Skip tables that are not setup to being shown in rest
