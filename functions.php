@@ -519,21 +519,21 @@ function tdb_insert_object( $object_data, $wp_error = false ) {
     $primary_key = $tdb_table->db->primary_key;
 
     if ( ! empty( $object_data[$primary_key] ) ) {
-        $update = true;
+      $update = true;
 
-        // Get the object ID.
-        $object_id = $object_data[$primary_key];
-        $object_before = tdb_get_object( $object_id );
-        $original_object_data = tdb_get_object( $object_id, ARRAY_A );
+      // Get the object ID.
+      $object_id = $object_data[$primary_key];
+      $object_before = tdb_get_object( $object_id );
+      $original_object_data = tdb_get_object( $object_id, ARRAY_A );
 
-        if ( is_null( $original_object_data ) ) {
+      if ( is_null( $original_object_data ) ) {
 
-            if ( $wp_error ) {
-                return new WP_Error( 'invalid_object', __( 'Invalid object ID.' ) );
-            }
-
-            return 0;
+        if ( $wp_error ) {
+          return new WP_Error( 'invalid_object', __( 'Invalid object ID.' ) );
         }
+
+        return 0;
+      }
     }
 
     /**
@@ -552,54 +552,67 @@ function tdb_insert_object( $object_data, $wp_error = false ) {
 
     if ( $update ) {
 
-        /**
-         * Fires immediately before an existing object is updated in the database.
-         *
-         * @since 1.0.0
-         *
-         * @param int   $object_id  Object ID.
-         * @param array $data       Array of unslashed object data.
-         */
-        do_action( 'pre_object_update', $object_id, $object_data );
+      /**
+       * Fires immediately before an existing object is updated in the database.
+       *
+       * @since 1.0.0
+       *
+       * @param int   $object_id  Object ID.
+       * @param array $data       Array of unslashed object data.
+       */
+      do_action( 'pre_object_update', $object_id, $object_data );
 
-        if ( false === $tdb_table->db->update( $object_data, $where ) ) {
-            if ( $wp_error ) {
-                return new WP_Error('db_update_error', __('Could not update object in the database'), $wpdb->last_error);
-            } else {
-                return 0;
-            }
+      if ( false === $tdb_table->db->update( $object_data, $where ) ) {
+        if ( $wp_error ) {
+          return new WP_Error('db_update_error', __('Could not update object in the database'), $wpdb->last_error);
+        } else {
+          return 0;
         }
+      }
     } else {
 
-        $import_id = isset( $object_data['import_id'] ) ? $object_data['import_id'] : 0;
+      $import_id = isset( $object_data['import_id'] ) ? $object_data['import_id'] : 0;
 
-        // If there is a suggested ID, use it if not already present.
-        if ( ! empty( $import_id ) ) {
+      // If there is a suggested ID, use it if not already present.
+      if ( ! empty( $import_id ) ) {
 
-            $import_id = (int) $import_id;
-            if ( ! $wpdb->get_var( $wpdb->prepare("SELECT {$primary_key} FROM {$tdb_table->db->table_name} WHERE {$primary_key} = %d", $import_id) ) ) {
-                $object_data[$primary_key] = $import_id;
-            }
+          $import_id = (int) $import_id;
+          if ( ! $wpdb->get_var( $wpdb->prepare("SELECT {$primary_key} FROM {$tdb_table->db->table_name} WHERE {$primary_key} = %d", $import_id) ) ) {
+              $object_data[$primary_key] = $import_id;
+          }
+      }
+
+      if (empty($object_data)) {
+        /**
+         * IMPORTANT: Data cannot be an empty array; otherwise the call to
+         * $wpdb->insert() throws a notice: "wpdb::prepare was called incorrectly.
+         * The query argument of wpdb::prepare() must have a placeholder."
+         *
+         * That's because it creates an SQL query with empty columns:
+         * INSERT INTO `table_name` (``) VALUES ()
+         *
+         * This is a workaround to insert an empty object.
+         */
+        $wpdb->insert_id = 0;
+        $wpdb->query("INSERT INTO {$tdb_table->db->table_name} () VALUES ();");
+
+      } elseif ( false === $wpdb->insert( $tdb_table->db->table_name, $object_data ) ) {
+
+        if ( $wp_error ) {
+          return new WP_Error('db_insert_error', __('Could not insert object into the database'), $wpdb->last_error);
+        } else {
+          return 0;
         }
+      }
 
-        if ( false === $wpdb->insert( $tdb_table->db->table_name, $object_data ) ) {
-
-            if ( $wp_error ) {
-                return new WP_Error('db_insert_error', __('Could not insert object into the database'), $wpdb->last_error);
-            } else {
-                return 0;
-            }
-
-        }
-
-        $object_id = (int) $wpdb->insert_id;
+      $object_id = (int) $wpdb->insert_id;
     }
 
     // If isset meta_input and object supports meta, then add meta data
     if ( ! empty( $object_data['meta_input'] ) && $tdb_table->meta ) {
-        foreach ( $object_data['meta_input'] as $field => $value ) {
-            tdb_update_object_meta( $object_id, $field, $value );
-        }
+      foreach ( $object_data['meta_input'] as $field => $value ) {
+        tdb_update_object_meta( $object_id, $field, $value );
+      }
     }
 
     tdb_clean_object_cache( $object_id );
@@ -607,28 +620,28 @@ function tdb_insert_object( $object_data, $wp_error = false ) {
     $object = tdb_get_object( $object_id );
 
     if ( $update ) {
-        /**
-         * Fires once an existing post has been updated.
-         *
-         * @since 1.0.0
-         *
-         * @param int     $post_ID Post ID.
-         * @param WP_Post $post    Post object.
-         */
-        do_action( 'tdb_edit_object', $object_id, $object );
+      /**
+       * Fires once an existing post has been updated.
+       *
+       * @since 1.0.0
+       *
+       * @param int     $post_ID Post ID.
+       * @param WP_Post $post    Post object.
+       */
+      do_action( 'tdb_edit_object', $object_id, $object );
 
-        $object_after = tdb_get_object( $object_id );
+      $object_after = tdb_get_object( $object_id );
 
-        /**
-         * Fires once an existing post has been updated.
-         *
-         * @since 1.0.0
-         *
-         * @param int     $object_id      Object ID.
-         * @param WP_Post $object_after   Object following the update.
-         * @param WP_Post $object_before  Object before the update.
-         */
-        do_action( 'tdb_object_updated', $object_id, $object_after, $object_before);
+      /**
+       * Fires once an existing post has been updated.
+       *
+       * @since 1.0.0
+       *
+       * @param int     $object_id      Object ID.
+       * @param WP_Post $object_after   Object following the update.
+       * @param WP_Post $object_before  Object before the update.
+       */
+      do_action( 'tdb_object_updated', $object_id, $object_after, $object_before);
     }
 
     /**
