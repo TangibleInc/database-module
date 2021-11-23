@@ -367,6 +367,9 @@ class TDB_Table {
 
     $has_edit_link = ! empty( $args['_edit_link'] );
 
+    // Default capability: Same as in TDB_View::__construct()
+    $default_capability = 'manage_options';
+
     // Args prefixed with an underscore are reserved for internal use.
     $defaults = [
       'singular'              => $this->name,
@@ -405,12 +408,15 @@ class TDB_Table {
        * Menu icon
        *
        * - The url to the icon to be used for this menu.
+       *
        * - Pass a base64-encoded SVG using a data URI, which will be colored to match
        * the color scheme -- this should begin with 'data:image/svg+xml;base64,'.
-       * - Pass the name of a Dashicons helper class to use a font icon, e.g. 'dashicons-chart-pie'.
+       *
+       * - Pass the name of a Dashicons CSS class to use a font icon, e.g. 'dashicons-chart-pie'. https://developer.wordpress.org/resource/dashicons/
+       *
        * - Pass 'none' to leave div.wp-menu-image empty so an icon can be added via CSS. Defaults to use the posts icon.
        */
-      'menu_icon'             => null,
+      'menu_icon'             => 'dashicons-admin-page',
 
       'capability_type'       => 'item',
       'capabilities'          => array(),
@@ -436,7 +442,7 @@ class TDB_Table {
       //'schema' => '',
       'engine' => 'InnoDB',
       // Shortcuts
-      'capability' => '',
+      'capability' => $default_capability,
     ];
 
     $args = array_merge( $defaults, $args );
@@ -667,12 +673,15 @@ class TDB_Table {
      */
     if ($this->show_ui) {
       foreach (['list', 'add'] as $key) {
+
         if (!$this->views->$key || !$this->views->$key->args['show_in_menu']) continue;
+
         add_menu_page(
           $args['plural'], // Page title
           $args['plural'], // Menu title
           isset($args['capabilities']) ? $args['capabilities'] : (
-            isset($args['capability']) ? $args['capability'] : ''
+            isset($args['capability']) ? $args['capability']
+              : $default_capability
           ),
           $this->name, // Menu slug
           null, // Callback
