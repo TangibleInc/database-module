@@ -79,11 +79,15 @@ new class {
     // Setup role capabilities - @see ./functions.php
     tdb_populate_roles();
 
-    do_action( 'tdb_init' );
+    // Init action hook used to register tables
+    add_action('init', function() {
 
-    if (is_admin()) {
-      do_action( 'tdb_admin_init' );
-    }
+      do_action( 'tdb_init' );
+
+      if (is_admin()) {
+        do_action( 'tdb_admin_init' );
+      }
+    }, 0);
   }
 
   /**
