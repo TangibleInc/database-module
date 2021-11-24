@@ -676,18 +676,25 @@ class TDB_Table {
 
         if (!$this->views->$key || !$this->views->$key->args['show_in_menu']) continue;
 
-        add_menu_page(
-          $args['plural'], // Page title
-          $args['plural'], // Menu title
-          isset($args['capabilities']) ? $args['capabilities'] : (
-            isset($args['capability']) ? $args['capability']
-              : $default_capability
-          ),
-          $this->name, // Menu slug
-          null, // Callback
-          $args['menu_icon'],
-          $args['menu_position']
-        );
+        $name = $this->name;
+
+        add_action('admin_menu', function() use($args, $default_capability, $name) {
+
+          add_menu_page(
+            $args['plural'], // Page title
+            $args['plural'], // Menu title
+            isset($args['capabilities']) ? $args['capabilities'] : (
+              isset($args['capability']) ? $args['capability']
+                : $default_capability
+            ),
+            $name, // Menu slug
+            null, // Callback
+            $args['menu_icon'],
+            $args['menu_position']
+          );
+
+        });
+
         break;
       }
     }
