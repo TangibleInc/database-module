@@ -346,7 +346,7 @@ class TDB_DataBase {
     private function create() {
 
         // Run CREATE TABLE query
-        $created = dbDelta( "CREATE TABLE {$this->table_name} ( {$this->schema} ) ENGINE={$this->engine} {$this->charset_collation};" );
+        $created = dbDelta( "CREATE TABLE `{$this->table_name}` ( {$this->schema} ) ENGINE={$this->engine} {$this->charset_collation};" );
 
         // Was anything created?
         return ! empty( $created );
