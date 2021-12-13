@@ -417,4 +417,19 @@ class TDB_List_Table extends TDB_List_Table_Base {
       'total_pages' => ceil( $total_items / $per_page )
       ) );
   }
+  
+  public function extra_tablenav($which){
+    global $tdb_table;
+    
+    $args = $tdb_table->views->list->args;
+
+    switch ( $which ) {
+      case 'top':
+        if(isset($args['nav_top']) && is_callable($args['nav_top'])) call_user_func_array($args['nav_top'], [$tdb_table]);
+        break;
+      case 'bottom':
+        if(isset($args['nav_bottom']) && is_callable($args['nav_bottom'])) call_user_func_array($args['nav_bottom'], [$tdb_table]);
+        break;
+    }
+  }
 }
