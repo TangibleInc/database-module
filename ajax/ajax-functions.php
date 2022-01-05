@@ -9,22 +9,19 @@
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
 
-function ct_ajax_list_table_handle_request() {
+add_action( 'wp_ajax_tdb_ajax_list_table_request', function() {
 
-    global $ct_table, $ct_query, $ct_list_table;
+    global $tdb_table, $tdb_query, $tdb_list_table;
 
     if( ! isset( $_GET['object'] ) ) {
         wp_send_json_error();
     }
 
-    $ct_table = ct_setup_table( $_GET['object'] );
+    $tdb_table = tdb_setup_table( $_GET['object'] );
 
-    if( ! is_object( $ct_table ) ) {
+    if( ! is_object( $tdb_table ) ) {
         wp_send_json_error();
     }
-
-    // Setup this constant to allow from CT_List_Table meet that this render comes from this plugin
-    @define( 'IS_CT_AJAX_LIST_TABLE', true );
 
     if( is_array( $_GET['query_args'] ) ) {
         $query_args = $_GET['query_args'];
@@ -42,16 +39,15 @@ function ct_ajax_list_table_handle_request() {
     }
 
     // Set up vars
-    $ct_query = new CT_Query( $query_args );
-    $ct_list_table = new CT_List_Table();
+    $tdb_query = new TDB_Query( $query_args );
+    $tdb_list_table = new TDB_List_Table();
 
-    $ct_list_table->prepare_items();
+    $tdb_list_table->prepare_items();
 
     ob_start();
-    $ct_list_table->display();
+    $tdb_list_table->display();
     $output = ob_get_clean();
 
     wp_send_json_success( $output );
 
-}
-add_action( 'wp_ajax_ct_ajax_list_table_request', 'ct_ajax_list_table_handle_request' );
+});

@@ -1,8 +1,8 @@
-.ct-ajax-list-table .wp-list-table {
+.tdb-ajax-list-table .wp-list-table {
     position: relative;
 }
 
-.ct-ajax-list-table-loader {
+.tdb-ajax-list-table-loader {
     position: absolute;
     top: 0;
     left: 0;
@@ -12,7 +12,7 @@
     background-color: rgba(255,255,255,0.5) !important;
 }
 
-.ct-ajax-list-table-loader .spinner {
+.tdb-ajax-list-table-loader .spinner {
     float: none;
     position: absolute;
     top: 50%;
