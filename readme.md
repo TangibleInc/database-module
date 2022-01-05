@@ -108,6 +108,11 @@ add_action('tdb_init', function() {
       ],
       'list' => [
         // 'per_page' => 40 // This will force the per page initial value
+        
+        // callbacks to render additional content on the 'top' and 'bottom' of the list table - e.g additional filters
+        // @param obj $table - the table object passed to the callback
+        'nav_top'=> function($table) {/*RENDER TOP POSITION CONTENT*/}, 
+        'nav_bottom'=> function($table) {/*RENDER BOTTOM POSITION CONTENT*/},
 
         // The columns arg is a shortcut of the manage_columns and manage_sortable_columns commonly required hooks
         'columns' => [

@@ -62,7 +62,7 @@ class TDB_DataBase_Schema {
 
         // Setup PRIMARY KEY definition
         $sql = implode( ', ', $fields_def ) . ', '
-            . 'PRIMARY KEY  (' . $this->primary_key . ')'; // Add two spaces to avoid issues
+            . 'PRIMARY KEY  (`' . $this->primary_key . '`)'; // Add two spaces to avoid issues
 
         // Setup KEY definitions
         if( ! empty( $this->keys ) ) {
@@ -85,7 +85,7 @@ class TDB_DataBase_Schema {
         $schema = '';
 
         // Field name
-        $schema .= $field_id . ' ';
+        $schema .= '`' . $field_id . '` ';
 
         // Type definition
         $schema .= $field_args['type'];
@@ -229,10 +229,10 @@ class TDB_DataBase_Schema {
                 $length = $max_index_length;
             }
 
-            if( $this->is_numeric( $field_args['type'] ) ) {
-                $this->keys[] = 'KEY ' . $field_id . '(' . $field_id . ')';
+            if( $this->is_numeric( $field_args['type'] ) || strtoupper( $field_args['type'] ) === 'DATETIME' ) {
+              $this->keys[] = 'KEY `' . $field_id . '`(`' . $field_id . '`)';
             } else {
-                $this->keys[] = 'KEY ' . $field_id . '(' . $field_id . '(' . $length . '))';
+              $this->keys[] = 'KEY `' . $field_id . '`(`' . $field_id . '`(' . $length . '))';
             }
         }
 
