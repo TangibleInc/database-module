@@ -4,7 +4,13 @@
  */
 new class {
 
-  const VERSION     = '20211213'; // Must be in format YYYYMMDD
+  /**
+   * Update module version to ensure latest version gets loaded
+   * when multiple module instances exist.
+   *
+   * Expected format: YYYYMMDD
+   */
+  const VERSION     = '20220106';
   const ACTION_NAME = 'tangible_database_module_load';
 
   function __construct() {
@@ -72,7 +78,9 @@ new class {
     require_once $dir . 'functions.php';
     require_once $dir . 'hooks.php';
 
+    // Extended features
     require_once $dir . 'cmb2.php';
+    require_once $dir . 'ajax/index.php';
 
     $this->load_textdomain();
 
