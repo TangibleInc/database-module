@@ -7,6 +7,7 @@ Encapsulates "Custom Tables - Ajax List Table" developed by [rubengc](rubengcdev
 [https://github.com/rubengc/ct-ajax-list-table](https://github.com/rubengc/ct-ajax-list-table)
 
 To render an ajax list table use the main function with appropriate arguments:
+
  ```php
 /**
  * Render an ajax list table
@@ -24,6 +25,7 @@ tdb_render_ajax_list_table ($table, $query_args = array(), $view_args = array() 
 Providing that a **'user_related_data'** Custom Database Table with User related data has been defined, it can be rendered on User profile page using **'show_user_profile'** and **'edit_user_profile'** WP action hooks:
 
 Callback function:
+
 ```php
 /**
  * Generate markup to list user related data
@@ -70,7 +72,9 @@ function user_related_data_profile_page_list( $user = null ) {
   <?php
 };
 ```
+
 WP action hooks:
+
 ```php
 add_action('show_user_profile', 'user_related_data_profile_page_list');
 add_action('edit_user_profile', 'user_related_data_profile_page_list');
