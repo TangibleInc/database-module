@@ -219,7 +219,7 @@ add_filter( 'cmb2_override_meta_save', 'tdb_cmb2_override_meta_save', 10, 4 );
  */
 function tdb_cmb2_override_meta_remove( $check, $args, $field_args, $field ) {
 
-    global $tdb_registered_tables, $tdb_table, $tdb_cmb2_override;
+    global $tdb_registered_tables, $tdb_table, $tdb_cmb2_override, $wpdb;
 
     if( $tdb_cmb2_override !== true ) {
         return $check;
@@ -231,8 +231,23 @@ function tdb_cmb2_override_meta_remove( $check, $args, $field_args, $field ) {
     // Note: Main fields are automatically managed by the save method on the TDB_Edit_View edit screen
     if( ! isset( $object[$args['field_id']] ) && in_array( 'meta', $tdb_table->supports ) ) {
 
-        return tdb_delete_object_meta( $args['id'], $args['field_id'], $field->value );
+      if( $field_args['multiple'] && ! $field_args['repeatable'] ) {
+        // Delete multiple entries
+        $meta_table_name = $tdb_table->meta->db->table_name;
+        $primary_key = $tdb_table->db->primary_key;
 
+        $where = array(
+            'meta_key' => $args['field_id']
+        );
+
+        $where[$primary_key] = $args['id'];
+
+        return $wpdb->delete( $meta_table_name, $where );
+
+      } else {
+        // Delete single entry
+        return tdb_delete_object_meta( $args['id'], $args['field_id'], $field->value );
+      }
     }
 
     return $check;
