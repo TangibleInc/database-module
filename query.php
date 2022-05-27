@@ -685,14 +685,13 @@ class TDB_Query {
           //$this->results = array_map( 'tdb_get_object', $this->results );
 
           /**
-           * Additional filter to allow getting not mapped results - useful in queries with JOIN clauses
-           *
-           * @param array  $mapped_results Mapped results.
-           * @param array  $row_results Row results
+           * Filter to enable/disable getting mapped results
+           * Set to false for queries with JOIN clauses. Otherwise, tdb_get_object() gets applied by default,
+           * which only returns results from the first table in the query.
            */
-          $row_results = $this->results;
-          $mapped_results = array_map( 'tdb_get_object', $this->results );
-          $this->results = apply_filters('tdb_database_results_objects', $mapped_results, $row_results);
+          if (apply_filters('tdb_get_result_objects', true)) {
+            $this->results = array_map( 'tdb_get_object', $this->results );
+          }
         }
 
         if ( ! $q['suppress_filters'] ) {
@@ -737,14 +736,13 @@ class TDB_Query {
           //$this->results = array_map( 'tdb_get_object', $this->results );
 
           /**
-           * Additional filter to allow getting not mapped results - useful in queries with JOIN clauses
-           *
-           * @param array  $mapped_results Mapped results.
-           * @param array  $row_results Row results
+           * Filter to enable/disable getting mapped results
+           * Set to false for queries with JOIN clauses. Otherwise, tdb_get_object() gets applied by default,
+           * which only returns results from the first table in the query.
            */
-          $row_results = $this->results;
-          $mapped_results = array_map( 'tdb_get_object', $this->results );
-          $this->results = apply_filters('tdb_database_results_objects', $mapped_results, $row_results);
+          if (apply_filters('tdb_get_result_objects', true)) {
+            $this->results = array_map( 'tdb_get_object', $this->results );
+          }
 
             //if ( $q['cache_results'] )
                 //update_post_caches($this->posts, $post_type, $q['update_post_term_cache'], $q['update_post_meta_cache']);
