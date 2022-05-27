@@ -672,7 +672,27 @@ class TDB_Query {
 
         // Convert to objects.
         if ( $this->results ) {
-            $this->results = array_map( 'tdb_get_object', $this->results );
+        
+          /**
+           * Uncommented - it causes issues with queries with JOIN clauses since it is mapped to 'tdb_get_object' function
+           * which returns objects from querying only the first table in the query.
+           * Using 'tdb_database_results_objects' filter below instead.
+           *
+           * @see functions.php, 'tdb_get_object' and 'tdb_get_object_instance' functions
+           *
+           * TODO remove this line eventually
+           */
+          //$this->results = array_map( 'tdb_get_object', $this->results );
+
+          /**
+           * Additional filter to allow getting not mapped results - useful in queries with JOIN clauses
+           *
+           * @param array  $mapped_results Mapped results.
+           * @param array  $row_results Row results
+           */
+          $row_results = $this->results;
+          $mapped_results = array_map( 'tdb_get_object', $this->results );
+          $this->results = apply_filters('tdb_database_results_objects', $mapped_results, $row_results);
         }
 
         if ( ! $q['suppress_filters'] ) {
@@ -705,7 +725,26 @@ class TDB_Query {
         if ( $this->results ) {
             $this->result_count = count( $this->results );
 
-            $this->results = array_map( 'tdb_get_object', $this->results );
+            /**
+           * Uncommented - it causes issues with queries with JOIN clauses since it is mapped to 'tdb_get_object' function
+           * which returns objects from querying only the first table in the query.
+           * Using 'tdb_database_results_objects' filter below instead.
+           *
+           * @see functions.php, 'tdb_get_object' and 'tdb_get_object_instance' functions
+           *
+           * TODO remove this line eventually
+           */
+          //$this->results = array_map( 'tdb_get_object', $this->results );
+
+          /**
+           * Additional filter to allow getting not mapped results - useful in queries with JOIN clauses
+           *
+           * @param array  $mapped_results Mapped results.
+           * @param array  $row_results Row results
+           */
+          $row_results = $this->results;
+          $mapped_results = array_map( 'tdb_get_object', $this->results );
+          $this->results = apply_filters('tdb_database_results_objects', $mapped_results, $row_results);
 
             //if ( $q['cache_results'] )
                 //update_post_caches($this->posts, $post_type, $q['update_post_term_cache'], $q['update_post_meta_cache']);
