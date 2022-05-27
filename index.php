@@ -10,7 +10,7 @@ new class {
    *
    * Expected format: YYYYMMDD
    */
-  const VERSION     = '20220106';
+  const VERSION     = '20220527';
   const ACTION_NAME = 'tangible_database_module_load';
 
   function __construct() {
