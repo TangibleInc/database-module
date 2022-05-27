@@ -674,17 +674,6 @@ class TDB_Query {
         if ( $this->results ) {
         
           /**
-           * Uncommented - it causes issues with queries with JOIN clauses since it is mapped to 'tdb_get_object' function
-           * which returns objects from querying only the first table in the query.
-           * Using 'tdb_database_results_objects' filter below instead.
-           *
-           * @see functions.php, 'tdb_get_object' and 'tdb_get_object_instance' functions
-           *
-           * TODO remove this line eventually
-           */
-          //$this->results = array_map( 'tdb_get_object', $this->results );
-
-          /**
            * Filter to enable/disable getting mapped results
            * Set to false for queries with JOIN clauses. Otherwise, tdb_get_object() gets applied by default,
            * which only returns results from the first table in the query.
@@ -722,18 +711,7 @@ class TDB_Query {
         // Ensure that any posts added/modified via one of the filters above are
         // of the type WP_Post and are filtered.
         if ( $this->results ) {
-            $this->result_count = count( $this->results );
-
-            /**
-           * Uncommented - it causes issues with queries with JOIN clauses since it is mapped to 'tdb_get_object' function
-           * which returns objects from querying only the first table in the query.
-           * Using 'tdb_database_results_objects' filter below instead.
-           *
-           * @see functions.php, 'tdb_get_object' and 'tdb_get_object_instance' functions
-           *
-           * TODO remove this line eventually
-           */
-          //$this->results = array_map( 'tdb_get_object', $this->results );
+            $this->result_count = count( $this->results );           
 
           /**
            * Filter to enable/disable getting mapped results
