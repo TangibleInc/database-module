@@ -686,7 +686,8 @@ class TDB_Query {
 
           if ( ! $q['suppress_filters'] ) {
               /**
-               * Filters the raw post results array, prior to status checks.
+               * Filters the array of retrieved posts after they've been fetched and
+               * internally processed.
                *
                * @since 1.0.0
                *
@@ -697,9 +698,8 @@ class TDB_Query {
           }
         }
 
-        // Ensure that any posts added/modified via one of the filters above are
-        // of the type WP_Post and are filtered.
         if ( $this->results ) {
+
             $this->result_count = count( $this->results );
 
             //if ( $q['cache_results'] )
