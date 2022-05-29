@@ -672,19 +672,16 @@ class TDB_Query {
 
         if ( $this->results ) {
 
-          if ( ! empty($q['get_result_objects']) ) {
-            /**
-             * Convert to objects
-             *
-             * Originally this was applied by default, but it prevented JOIN clauses
-             * from working correctly, because tdb_get_object() re-fetches results from
-             * only the first table in the query. This option is here in case any existing
-             * code depended on the original behavior.
-             */
-            $this->results = array_map( 'tdb_get_object', $this->results );
-          }
+            if ( ! $q['suppress_filters'] ) {
+              /**
+               * Convert to objects
+               *
+               * This is applied by default for backward compatibility. It fetches results
+               * from **only the first table** of the query. If you're using JOIN clauses,
+               * set query parameter "suppress_filters" to TRUE, to get unprocessed results.
+               */
+              $this->results = array_map( 'tdb_get_object', $this->results );
 
-          if ( ! $q['suppress_filters'] ) {
               /**
                * Filters the array of retrieved posts after they've been fetched and
                * internally processed.
@@ -695,10 +692,7 @@ class TDB_Query {
                * @param WP_Query &$this The WP_Query instance (passed by reference).
                */
               $this->results = apply_filters_ref_array( 'tdb_query_results', array( $this->results, &$this ) );
-          }
-        }
-
-        if ( $this->results ) {
+            }
 
             $this->result_count = count( $this->results );
 
