@@ -672,16 +672,20 @@ class TDB_Query {
 
         if ( $this->results ) {
 
-            if ( ! $q['suppress_filters'] ) {
+            if ( empty($q['skip_convert_objects']) ) {
               /**
                * Convert to objects
                *
                * This is applied by default for backward compatibility. It fetches results
-               * from **only the first table** of the query. If you're using JOIN clauses,
-               * set query parameter "suppress_filters" to TRUE, to get unprocessed results.
+               * from **only the first table** of the query. If you're using a JOIN clause,
+               * set this query parameter to TRUE, to get unprocessed results.
+               *
+               * @see ./functions.php, tdb_get_object and tdb_get_object_instance
                */
               $this->results = array_map( 'tdb_get_object', $this->results );
+            }
 
+            if ( ! $q['suppress_filters'] ) {
               /**
                * Filters the array of retrieved posts after they've been fetched and
                * internally processed.
