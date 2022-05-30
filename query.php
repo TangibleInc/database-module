@@ -670,57 +670,35 @@ class TDB_Query {
             }
         }
 
-        // Convert to objects.
         if ( $this->results ) {
-        
-          /**
-           * Filter to enable/disable getting mapped results
-           * Set to false for queries with JOIN clauses. Otherwise, tdb_get_object() gets applied by default,
-           * which only returns results from the first table in the query.
-           */
-          if (apply_filters('tdb_get_result_objects', true)) {
-            $this->results = array_map( 'tdb_get_object', $this->results );
-          }
-        }
 
-        if ( ! $q['suppress_filters'] ) {
-            /**
-             * Filters the raw post results array, prior to status checks.
-             *
-             * @since 1.0.0
-             *
-             * @param array    $posts The post results array.
-             * @param WP_Query &$this The WP_Query instance (passed by reference).
-             */
-            $this->results = apply_filters_ref_array( 'tdb_query_results', array( $this->results, &$this ) );
-        }
+            if ( empty($q['skip_convert_objects']) ) {
+              /**
+               * Convert to objects
+               *
+               * This is applied by default for backward compatibility. It fetches results
+               * from **only the first table** of the query. If you're using a JOIN clause,
+               * set this query parameter to TRUE, to get unprocessed results.
+               *
+               * @see ./functions.php, tdb_get_object and tdb_get_object_instance
+               */
+              $this->results = array_map( 'tdb_get_object', $this->results );
+            }
 
-        if ( ! $q['suppress_filters'] ) {
-            /**
-             * Filters the array of retrieved posts after they've been fetched and
-             * internally processed.
-             *
-             * @since 1.0.0
-             *
-             * @param array    $posts The array of retrieved posts.
-             * @param WP_Query &$this The WP_Query instance (passed by reference).
-             */
-            $this->results = apply_filters_ref_array( 'tdb_the_results', array( $this->results, &$this ) );
-        }
+            if ( ! $q['suppress_filters'] ) {
+              /**
+               * Filters the array of retrieved posts after they've been fetched and
+               * internally processed.
+               *
+               * @since 1.0.0
+               *
+               * @param array    $posts The post results array.
+               * @param WP_Query &$this The WP_Query instance (passed by reference).
+               */
+              $this->results = apply_filters_ref_array( 'tdb_query_results', array( $this->results, &$this ) );
+            }
 
-        // Ensure that any posts added/modified via one of the filters above are
-        // of the type WP_Post and are filtered.
-        if ( $this->results ) {
-            $this->result_count = count( $this->results );           
-
-          /**
-           * Filter to enable/disable getting mapped results
-           * Set to false for queries with JOIN clauses. Otherwise, tdb_get_object() gets applied by default,
-           * which only returns results from the first table in the query.
-           */
-          if (apply_filters('tdb_get_result_objects', true)) {
-            $this->results = array_map( 'tdb_get_object', $this->results );
-          }
+            $this->result_count = count( $this->results );
 
             //if ( $q['cache_results'] )
                 //update_post_caches($this->posts, $post_type, $q['update_post_term_cache'], $q['update_post_meta_cache']);
