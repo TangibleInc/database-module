@@ -1665,6 +1665,13 @@ function tdb_get_delete_link( $name, $object_id = 0 ) {
     return $url;
 }
 
+/**
+ * Helper function to get the tables registered in a group of custom tables
+ *
+ * @param string $group
+ *
+ * @return array
+ */
 function tdb_get_tables_in_group( $group ) {
 
     global $tdb_tables_groups, $wpdb;
@@ -1682,10 +1689,21 @@ function tdb_get_tables_in_group( $group ) {
         "%" . $wpdb->esc_like( $group ) . "%"
     ) );
 
+    // Ensure that group tables is an array
+    if( ! is_array( $tdb_tables_groups[$group] ) ) {
+      $tdb_tables_groups[$group] = array();
+    }
+
     return $tdb_tables_groups[$group];
 
 }
 
+/**
+ * Add the table to the group of tables
+ *
+ * @param string $group
+ * @param string $table
+ */
 function tdb_add_table_to_group( $group, $table ) {
 
     global $tdb_tables_groups;
@@ -1694,12 +1712,19 @@ function tdb_add_table_to_group( $group, $table ) {
         $tdb_tables_groups = array();
     }
 
-    if( isset( $tdb_tables_groups[$group] ) ) {
-        $tdb_tables_groups[$group] = $table;
+    if( ! isset( $tdb_tables_groups[$group] ) ) {
+      $tdb_tables_groups[$group] = array();
     }
+
+    $tdb_tables_groups[$group][] = $table;
 
 }
 
+/**
+ * Reset the tables in a group
+ *
+ * @param string $group
+ */
 function tdb_reset_tables_in_group( $group ) {
 
     global $tdb_tables_groups;
