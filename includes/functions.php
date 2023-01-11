@@ -651,9 +651,9 @@ function tdb_insert_object( $object_data, $wp_error = false ) {
      *
      * @since 1.0.0
      *
-     * @param int     $object_id    Object ID.
-     * @param WP_Post $object       Object object.
-     * @param bool    $update       Whether this is an existing object being updated or not.
+     * @param int       $object_id    Object ID.
+     * @param stdClass  $object       Object.
+     * @param bool      $update       Whether this is an existing object being updated or not.
      */
     do_action( "tdb_save_object_{$tdb_table->name}", $object_id, $object, $update );
 
@@ -662,9 +662,9 @@ function tdb_insert_object( $object_data, $wp_error = false ) {
      *
      * @since 1.0.0
      *
-     * @param int     $object_id    Object ID.
-     * @param WP_Post $object       Object.
-     * @param bool    $update       Whether this is an existing post being updated or not.
+     * @param int       $object_id    Object ID.
+     * @param stdClass  $object       Object.
+     * @param bool      $update       Whether this is an existing object being updated or not.
      */
     do_action( 'tdb_save_object', $object_id, $object, $update );
 
@@ -673,9 +673,9 @@ function tdb_insert_object( $object_data, $wp_error = false ) {
      *
      * @since 1.0.0
      *
-     * @param int     $post_ID Post ID.
-     * @param WP_Post $post    Post object.
-     * @param bool    $update  Whether this is an existing post being updated or not.
+     * @param int       $object_id    Object ID.
+     * @param stdClass  $object       Object.
+     * @param bool      $update       Whether this is an existing object being updated or not.
      */
     do_action( 'tdb_insert_object', $object_id, $object, $update );
 
@@ -1661,6 +1661,7 @@ function tdb_get_delete_link( $name, $object_id = 0 ) {
     $url = $tdb_registered_tables[$name]->views->list->get_link();
     $url = add_query_arg( array( $primary_key => $object_id ), $url );
     $url = add_query_arg( array( 'tdb-action' => 'delete' ), $url );
+    $url = add_query_arg( '_wpnonce', wp_create_nonce( 'tdb_delete_' . $object_id ), $url );
 
     return $url;
 }

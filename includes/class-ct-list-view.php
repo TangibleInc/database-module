@@ -297,8 +297,9 @@ class TDB_List_View extends TDB_View {
     global $tdb_table;
 
     // If not TDB object, die
-    if ( ! $tdb_table )
-    wp_die( __( 'Invalid item type.' ) );
+    if ( ! $tdb_table ) {
+      wp_die( __( 'Invalid item type.' ) );
+    }
 
     // If not TDB object allow ui, die
     if ( ! $tdb_table->show_ui ) {
@@ -314,7 +315,16 @@ class TDB_List_View extends TDB_View {
 
     $object_id = (int) $_GET[$primary_key];
 
-    // If not current user can delete, die
+    // Nonce check
+    if ( ! isset( $_REQUEST['_wpnonce'] ) ) {
+      wp_die( __( 'Sorry, you are not allowed to delete this item.' ) );
+    }
+
+    if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'tdb_delete_' . $object_id ) ) {
+      wp_die( __( 'Sorry, you are not allowed to delete this item.' ) );
+    }
+
+    // If user can not delete it, bail
     if ( ! current_user_can( $tdb_table->cap->delete_item, $object_id ) ) {
       wp_die( __( 'Sorry, you are not allowed to delete this item.' ) );
     }
