@@ -239,7 +239,7 @@ class TDB_View {
 
     if( ! $this->args['show_in_menu'] ) {
 
-      add_submenu_page( null, $this->args['page_title'], $this->args['menu_title'], $this->args['capability'], $this->args['menu_slug'], array( $this, 'render' ) );
+      add_submenu_page( '', $this->args['page_title'], $this->args['menu_title'], $this->args['capability'], $this->args['menu_slug'], array( $this, 'render' ) );
 
     } else {
 
