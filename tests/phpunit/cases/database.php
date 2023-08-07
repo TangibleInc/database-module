@@ -27,12 +27,13 @@ class Database_TestCase extends \WP_UnitTestCase {
           'length' => '50',
         ],
       ]
-    ]);  
+    ]);
 
     $this->assertTrue(is_object($db), 'Database class can be instantiated');
 
     // Ensure database is created
     $db->maybe_upgrade();
+
 
 
     // Insert
