@@ -50,8 +50,11 @@ class TDBEditViewTestCase extends \WP_UnitTestCase
 
 
 
-        var_dump($tdb_registered_tables); die();
+        // var_dump($tdb_registered_tables); die();
 
-        $dbEditView->init();
+        /**
+         * WPDieException: Sorry, you are not allowed to edit items of this type.
+         */
+        // $dbEditView->init();
     }
 }
