@@ -31,7 +31,6 @@ class TDBDataBaseSchemaTestCase extends \WP_UnitTestCase {
 
     function test_database_schema() {
 
-        // TODO: Rename "DataBase" to "Database"
         $this->assertTrue(class_exists('TDB_DataBase_Schema'), 'Database class  exists');
 
 

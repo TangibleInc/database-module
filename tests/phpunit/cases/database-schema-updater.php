@@ -29,7 +29,7 @@ class TDBDataBaseSchemaUpdaterTestCase extends \WP_UnitTestCase
             ]
         ]);
 
-        // Ensure database is created
+        // IMPORTANT: Ensure database is created
         $this->tdb_db->maybe_upgrade();
 
         $this->db_schema_updater = new \TDB_DataBase_Schema_Updater($this->tdb_db);
@@ -46,9 +46,6 @@ class TDBDataBaseSchemaUpdaterTestCase extends \WP_UnitTestCase
 
         $this->assertTrue(is_object(  $this->db_schema_updater  ), 'Database Schema Updater class can be instantiated');
 
-        /**
-         * WordPress database error Table 'tests-wordpress.wp_test' doesn't exist for query
-         */
         $result = $this->db_schema_updater->run();
 
         // // Check if the schema update was successful
