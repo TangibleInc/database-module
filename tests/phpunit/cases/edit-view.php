@@ -4,6 +4,14 @@ namespace Tests\TDBEditViewTestCase;
 class TDBEditViewTestCase extends \WP_UnitTestCase
 {
 
+  function tear_down() {
+    parent::tear_down();
+  
+    // Prevent cached database tables from conflicting with tests
+    global $tdb_tables_groups;
+    $tdb_tables_groups = [];
+  }
+  
     function test_edit_view()
     {
         $this->assertTrue(defined('TDB_VERSION'), 'Database module is loaded');
@@ -57,7 +65,7 @@ class TDBEditViewTestCase extends \WP_UnitTestCase
         ]);
 
         // IMPORTANT: Ensure database is created
-        // $test_table->db->maybe_upgrade();
+        $test_table->db->maybe_upgrade();
 
         /**
          * TDB_Edit_View requires a user with capability to create and edit
@@ -84,17 +92,17 @@ class TDBEditViewTestCase extends \WP_UnitTestCase
           return null;
         }, 10, 2);
 
-        // $db_edit_view->init();
+        $db_edit_view->init();
 
-        // $this->assertTrue(is_array($result), 'TDB_Edit_View called wp_redirect');
+        $this->assertTrue(is_array($result), 'TDB_Edit_View called wp_redirect');
 
-        // $this->assertTrue($result['status'] === 302, 'TDB_Edit_View set redirect status 302');
+        $this->assertTrue($result['status'] === 302, 'TDB_Edit_View set redirect status 302');
 
-        // // @see tdb_get_edit_link()
-        // $edit_link_base = $test_table->views->edit->get_link();
+        // @see tdb_get_edit_link()
+        $edit_link_base = $test_table->views->edit->get_link();
 
-        // // var_dump($edit_link_base);
+        // var_dump($edit_link_base);
 
-        // $this->assertTrue(strpos($result['location'], $edit_link_base) === 0, 'TDB_Edit_View set redirect location to edit link');
+        $this->assertTrue(strpos($result['location'], $edit_link_base) === 0, 'TDB_Edit_View set redirect location to edit link');
       }
 }

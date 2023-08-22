@@ -7,8 +7,8 @@ class TDBDataBaseSchemaTestCase extends \WP_UnitTestCase {
     protected static $schema;
 
 
-    public function setUp(): void {
-        parent::setUp();
+    public function set_up(): void {
+        parent::set_up();
 
                 self::$schema =
                      [
@@ -29,6 +29,14 @@ class TDBDataBaseSchemaTestCase extends \WP_UnitTestCase {
 
     }
 
+    function tear_down() {
+      parent::tear_down();
+    
+      // Prevent cached database tables from conflicting with tests
+      global $tdb_tables_groups;
+      $tdb_tables_groups = [];
+    }
+    
     function test_database_schema() {
 
         $this->assertTrue(class_exists('TDB_DataBase_Schema'), 'Database class  exists');

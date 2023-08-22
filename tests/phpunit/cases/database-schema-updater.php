@@ -9,11 +9,18 @@ class TDBDataBaseSchemaUpdaterTestCase extends \WP_UnitTestCase
 
     private $db_schema_updater = null;
 
-
+    function tear_down() {
+      parent::tear_down();
+    
+      // Prevent cached database tables from conflicting with tests
+      global $tdb_tables_groups;
+      $tdb_tables_groups = [];
+    }
+    
     public function set_up(): void
     {
         parent::set_up();
-
+      
         $this->tdb_db = new \TDB_DataBase('test', [
             'schema' => [
                 'id' => [
@@ -30,7 +37,7 @@ class TDBDataBaseSchemaUpdaterTestCase extends \WP_UnitTestCase
         ]);
 
         // IMPORTANT: Ensure database is created
-        // $this->tdb_db->maybe_upgrade();
+        $this->tdb_db->maybe_upgrade();
 
         $this->db_schema_updater = new \TDB_DataBase_Schema_Updater($this->tdb_db);
 
@@ -46,12 +53,10 @@ class TDBDataBaseSchemaUpdaterTestCase extends \WP_UnitTestCase
 
         $this->assertTrue(is_object(  $this->db_schema_updater  ), 'Database Schema Updater class can be instantiated');
 
-        // $result = $this->db_schema_updater->run();
+        $result = $this->db_schema_updater->run();
 
-        // // Check if the schema update was successful
-        // $this->assertTrue($result, 'Database schema update was successful');
-
-
+        // Check if the schema update was successful
+        $this->assertTrue($result, 'Database schema update was successful');
     }
 
    /* public function test_object_field_to_array()

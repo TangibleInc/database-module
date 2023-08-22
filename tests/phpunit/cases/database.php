@@ -7,6 +7,14 @@ namespace Tests\Database;
  */
 class Database_TestCase extends \WP_UnitTestCase {
 
+  function tear_down() {
+    parent::tear_down();
+  
+    // Prevent cached database tables from conflicting with tests
+    global $tdb_tables_groups;
+    $tdb_tables_groups = [];
+  }
+  
   function test_database() {
 
     $this->assertTrue(defined('TDB_VERSION'), 'Database module is loaded');
