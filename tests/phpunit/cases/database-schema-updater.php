@@ -29,6 +29,9 @@ class TDBDataBaseSchemaUpdaterTestCase extends \WP_UnitTestCase
             ]
         ]);
 
+        // Ensure database is created
+        $this->tdb_db->maybe_upgrade();
+
         $this->db_schema_updater = new \TDB_DataBase_Schema_Updater($this->tdb_db);
 
 //        $this->schema = $this->tdb_db->schema;
@@ -49,7 +52,7 @@ class TDBDataBaseSchemaUpdaterTestCase extends \WP_UnitTestCase
         $result = $this->db_schema_updater->run();
 
         // // Check if the schema update was successful
-        // $this->assertTrue($result, 'Database schema update was successful');
+        $this->assertTrue($result, 'Database schema update was successful');
 
 
     }
