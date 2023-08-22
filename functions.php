@@ -651,9 +651,9 @@ function tdb_insert_object( $object_data, $wp_error = false ) {
      *
      * @since 1.0.0
      *
-     * @param int     $object_id    Object ID.
-     * @param WP_Post $object       Object object.
-     * @param bool    $update       Whether this is an existing object being updated or not.
+     * @param int       $object_id    Object ID.
+     * @param stdClass  $object       Object.
+     * @param bool      $update       Whether this is an existing object being updated or not.
      */
     do_action( "tdb_save_object_{$tdb_table->name}", $object_id, $object, $update );
 
@@ -662,9 +662,9 @@ function tdb_insert_object( $object_data, $wp_error = false ) {
      *
      * @since 1.0.0
      *
-     * @param int     $object_id    Object ID.
-     * @param WP_Post $object       Object.
-     * @param bool    $update       Whether this is an existing post being updated or not.
+     * @param int       $object_id    Object ID.
+     * @param stdClass  $object       Object.
+     * @param bool      $update       Whether this is an existing object being updated or not.
      */
     do_action( 'tdb_save_object', $object_id, $object, $update );
 
@@ -673,9 +673,9 @@ function tdb_insert_object( $object_data, $wp_error = false ) {
      *
      * @since 1.0.0
      *
-     * @param int     $post_ID Post ID.
-     * @param WP_Post $post    Post object.
-     * @param bool    $update  Whether this is an existing post being updated or not.
+     * @param int       $object_id    Object ID.
+     * @param stdClass  $object       Object.
+     * @param bool      $update       Whether this is an existing object being updated or not.
      */
     do_action( 'tdb_insert_object', $object_id, $object, $update );
 
@@ -1661,6 +1661,81 @@ function tdb_get_delete_link( $name, $object_id = 0 ) {
     $url = $tdb_registered_tables[$name]->views->list->get_link();
     $url = add_query_arg( array( $primary_key => $object_id ), $url );
     $url = add_query_arg( array( 'tdb-action' => 'delete' ), $url );
+    $url = add_query_arg( '_wpnonce', wp_create_nonce( 'tdb_delete_' . $object_id ), $url );
 
     return $url;
+}
+
+/**
+ * Helper function to get the tables registered in a group of custom tables
+ *
+ * @param string $group
+ *
+ * @return array
+ */
+function tdb_get_tables_in_group( $group ) {
+
+    global $tdb_tables_groups, $wpdb;
+
+    if( ! is_array( $tdb_tables_groups ) ) {
+        $tdb_tables_groups = array();
+    }
+
+    if( isset( $tdb_tables_groups[$group] ) ) {
+        return $tdb_tables_groups[$group];
+    }
+
+    $tdb_tables_groups[$group] = $wpdb->get_col( $wpdb->prepare(
+        "SHOW TABLES LIKE %s",
+        "%" . $wpdb->esc_like( $group ) . "%"
+    ) );
+
+    // Ensure that group tables is an array
+    if( ! is_array( $tdb_tables_groups[$group] ) ) {
+      $tdb_tables_groups[$group] = array();
+    }
+
+    return $tdb_tables_groups[$group];
+
+}
+
+/**
+ * Add the table to the group of tables
+ *
+ * @param string $group
+ * @param string $table
+ */
+function tdb_add_table_to_group( $group, $table ) {
+
+    global $tdb_tables_groups;
+
+    if( ! is_array( $tdb_tables_groups ) ) {
+        $tdb_tables_groups = array();
+    }
+
+    if( ! isset( $tdb_tables_groups[$group] ) ) {
+      $tdb_tables_groups[$group] = array();
+    }
+
+    $tdb_tables_groups[$group][] = $table;
+
+}
+
+/**
+ * Reset the tables in a group
+ *
+ * @param string $group
+ */
+function tdb_reset_tables_in_group( $group ) {
+
+    global $tdb_tables_groups;
+
+    if( ! is_array( $tdb_tables_groups ) ) {
+        $tdb_tables_groups = array();
+    }
+
+    if( isset( $tdb_tables_groups[$group] ) ) {
+        unset( $tdb_tables_groups[$group] );
+    }
+
 }

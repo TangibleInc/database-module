@@ -108,7 +108,9 @@ add_action('tdb_init', function() {
       ],
       'list' => [
         // 'per_page' => 40 // This will force the per page initial value
-        
+
+        'parent_slug' => '', // Add the new "custom post type" to the menu root
+
         // callbacks to render additional content on the 'top' and 'bottom' of the list table - e.g additional filters
         // @param obj $table - the table object passed to the callback
         'nav_top'=> function($table) {/*RENDER TOP POSITION CONTENT*/}, 
