@@ -33,7 +33,7 @@ class TDB_Edit_View extends TDB_View {
 
       // If not TDB object allow ui, die
       if ( ! $tdb_table->show_ui ) {
-          wp_die( __( 'Sorry, you are not allowed to edit items of this type.' ) );
+        wp_die( __( 'Sorry, you are not allowed to edit items of this type.' ) );
       }
 
       if( isset( $_POST['tdb-save'] ) ) {
