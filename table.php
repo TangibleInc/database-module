@@ -4,7 +4,7 @@
  *
  * Based on WP_Post_Type class
  */
-class TDB_Table {
+class TDB_Table extends stdClass {
 
   public $name;
 
