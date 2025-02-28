@@ -1,8 +1,8 @@
 {
   "name": "tangible-database-module",
   "description": "database module",
-  "homepage": "https://bitbucket.org/tangibleinc/tangible-database-module",
-  "repository": "git@bitbucket.org:tangibleinc/tangible-database-module.git",
+  "homepage": "https://github.com/tangibleinc/database-module",
+  "repository": "git@github.com:tangibleinc/database-module.git",
   "tangible": {
     "deployType": "module"
   },
@@ -21,7 +21,7 @@
     "env:destroy": "wp-env destroy"
   },
   "devDependencies": {
-    "@tangible/roller": "1.x",
-    "@wordpress/env": "^8.3.0"
+    "@tangible/roller": "2.x",
+    "@wordpress/env": "^10.19.0"
   }
 }
