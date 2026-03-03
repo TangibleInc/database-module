@@ -105,7 +105,7 @@ class TDB_DataBase_Schema_Updater {
                       if( $schema_fields[$column]['length'] > $max_index_length || $schema_fields[$column]['type'] === 'text' ) {
                           $add_index_query = '`' . $column . '`(`' . $column . '`(' . $max_index_length . '))';
                       } else {
-                          $add_index_query = '`' . $column . '`(' . $column . '`)';
+                          $add_index_query = '`' . $column . '`(`' . $column . '`)';
                       }
 
                       // Prevent errors if index already exists
