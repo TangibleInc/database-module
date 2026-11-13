@@ -1095,7 +1095,8 @@ function tdb_get_object_meta( $object_id, $meta_key = '', $single = false ) {
 
     $meta_cache = wp_cache_get( $object_id, $tdb_table->meta->name );
 
-    if ( !$meta_cache ) {
+    // An object without meta is cached as an empty array: only a miss (false) queries again.
+    if ( false === $meta_cache ) {
         $meta_cache = tdb_update_meta_cache( $tdb_table->meta->name, array( $object_id ) );
         $meta_cache = $meta_cache[$object_id];
     }
@@ -1294,7 +1295,8 @@ function tdb_update_meta_cache( $meta_type, $object_ids) {
 
     $object_ids = array_map('intval', $object_ids);
 
-    $cache_key = $meta_table_name;
+    // The group tdb_get_object_meta() reads and every meta write/delete invalidates.
+    $cache_key = $tdb_table->meta->name;
     $ids = array();
     $cache = array();
     foreach ( $object_ids as $id ) {
